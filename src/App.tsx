@@ -3,7 +3,7 @@ import './App.css';
 import Button from '@material-ui/core/Button/Button';
 import { AppBar, createStyles, Grid, IconButton, Paper, TextField, Theme, Toolbar, Typography, WithStyles, withStyles } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
-import { LabelSlider } from './components/label-slider/LabelSlider';
+import { LabelSlider } from './components/label-slider';
 
 const styles = (theme: Theme) => createStyles({
   root: {
