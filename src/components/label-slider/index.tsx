@@ -55,7 +55,6 @@ export const LabelSlider = withStyles(styles)(class LabelSliderComponent extends
                 <Typography variant="caption" id='break-length' gutterBottom>{this.props.label} ({this.state.value}{this.props.labelSuffix})</Typography>
                 <div className={classes.sliderSpacing}>
                     <Slider
-                        marks
                         value={this.state.value}
                         step={this.props.step}
                         min={this.props.min}

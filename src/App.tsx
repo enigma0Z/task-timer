@@ -56,8 +56,8 @@ interface AppState {
 }
 
 const defaultCountdowns: Countdown[] = [
-    new Countdown('Work', 5, 90, 50),
-    new Countdown('Break', 5, 15, 10),
+    new Countdown('Work', 1, 90, 50),
+    new Countdown('Break', 1, 15, 10),
 ]
 
 const APP_TITLE: string = 'Task Timer'
@@ -80,7 +80,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
             breakLength: 10,
             running: false,
             secondsLeft: 0,
-            currentCountdown: this.props.countdowns[0]
+            currentCountdown: this.props.countdowns[0],
         }
 
         this.getButtonText = this.getButtonText.bind(this)
@@ -126,6 +126,21 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
         return this.state.currentCountdown
     }
 
+    stopTimer(showNotification: boolean = true) {
+        console.log('Stopping, next timer:', this.getNextCountdown())
+        if (showNotification) {
+            this.state.currentCountdown.notification.show()
+        }
+
+        this.setState({
+            running: false,
+            secondsLeft: 0,
+            currentCountdown: this.getNextCountdown()
+        })
+
+        clearUpdateTimer()
+    }
+
     updateSecondsLeft() {
         if (this.state.endTime !== undefined) {
             let newSecondsLeft = (this.state.endTime - Date.now()) / 1000
@@ -136,15 +151,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
 
                 this.setUpdateTimer()
             } else {
-                console.log('Stopping, next timer:', this.getNextCountdown())
-                this.state.currentCountdown.notification.show()
-                this.setState({
-                    running: false,
-                    secondsLeft: 0,
-                    currentCountdown: this.getNextCountdown()
-                })
-
-                clearTimeout(this.timer)
+                this.stopTimer()
             }
         } else {
             return 0
@@ -185,10 +192,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
 
             this.setUpdateTimer()
         } else {
-            this.setState({
-                running: false,
-                secondsLeft: 0
-            })
+            this.stopTimer(false)
         }
     }
 
