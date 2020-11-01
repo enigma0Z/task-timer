@@ -60,6 +60,8 @@ const defaultCountdowns: Countdown[] = [
     new Countdown('Break', 5, 15, 10),
 ]
 
+const APP_TITLE: string = 'Task Timer'
+
 defaultCountdowns[0].setNext(defaultCountdowns[1])
 defaultCountdowns[1].setNext(defaultCountdowns[0])
 
@@ -135,7 +137,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                 this.setUpdateTimer()
             } else {
                 console.log('Stopping, next timer:', this.getNextCountdown())
-                this.showNotification()
+                this.state.currentCountdown.notification.show()
                 this.setState({
                     running: false,
                     secondsLeft: 0,
@@ -157,10 +159,13 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
         clearTimeout(this.timer)
     }
 
-    showNotification() {
+    showNotification(message: string) {
         // If the Notifications API is supported by the browser
         // then show the notification
-        if(this.notification.supported()) this.notification.show();
+        if(this.notification.supported()) {
+            this.notification.body = message;
+            this.notification.show();
+        }
     }
 
     handleStartStopOnClick() {
@@ -187,13 +192,24 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
         }
     }
 
-    handleNotificationClick(event: any) {
-        this.notification.close(event.target.tag);
+    handleNotificationClick(event: any, countdown: Countdown) {
+        window.focus()
+        countdown.notification.close(event.target.tag);
     }
 
     renderSliders() {
         return this.props.countdowns.map((countdown) =>
             <Grid item key={countdown.name}>
+                <ReactNotifications
+                    // @ts-ignore
+                    onRef={ref => (countdown.notification = ref)}
+                    title={APP_TITLE}
+                    body={`${countdown.name} completed!`}
+                    icon="icon.png"
+                    tag="task-timer"
+                    // @ts-ignore
+                    onClick={event => this.handleNotificationClick(event, countdown)}
+                />
                 <LabelSlider
                     label={countdown.name}
                     labelSuffix="m"
@@ -215,17 +231,6 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
 
         return (
             <div className={classes.root}>
-                <ReactNotifications
-                    // @ts-ignore
-                    onRef={ref => (this.notification = ref)} // Required
-                    title="Hey There!" // Required
-                    body="This is the body"
-                    icon="icon.png"
-                    tag="abcdef"
-                    timeout="2000"
-                    // @ts-ignore
-                    onClick={event => this.handleNotificationClick(event)}
-                />
                 <AppBar position="static">
                     <Toolbar>
                         <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">

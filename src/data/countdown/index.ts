@@ -4,7 +4,8 @@ export class Countdown {
         public min: number,
         public max: number,
         public value: number,
-        public next?: Countdown
+        public next?: Countdown,
+        public notification?: any,
     ) { }
 
     setNext(timer: Countdown) {
