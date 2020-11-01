@@ -138,7 +138,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
             currentCountdown: this.getNextCountdown()
         })
 
-        clearUpdateTimer()
+        this.clearUpdateTimer()
     }
 
     updateSecondsLeft() {
