@@ -60,10 +60,10 @@ const defaultCountdowns: Countdown[] = [
     new Countdown('Break', 1, 15, 10),
 ]
 
-const APP_TITLE: string = 'Task Timer'
-
 defaultCountdowns[0].setNext(defaultCountdowns[1])
 defaultCountdowns[1].setNext(defaultCountdowns[0])
+
+const APP_TITLE: string = 'Task Timer'
 
 const App = withStyles(styles)(class AppComponent extends Component<AppProps, AppState> {
     static defaultProps = {
@@ -230,20 +230,17 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
     }
 
     render() {
-
         const classes = this.props.classes
-
         return (
             <div className={classes.root}>
                 <AppBar position="static">
                     <Toolbar>
                         <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
-                            <MenuIcon />
+                            <MenuIcon /> {/*Not implemented*/}
                         </IconButton>
                         <Typography variant="h6" className={classes.title}>
-                            Start a new task
+                            {APP_TITLE}
                         </Typography>
-                        <Button color="inherit">Test</Button>
                     </Toolbar>
                 </AppBar>
                 <Grid container className={classes.gridContainer} spacing={2}>
@@ -253,9 +250,6 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                                 <Typography variant="h5">
                                     Timer parameters
                                 </Typography>
-                            </Grid>
-                            <Grid item>
-                                <TextField label="Task Name" /><br />
                             </Grid>
                             {this.renderSliders()}
                             <Grid item>
