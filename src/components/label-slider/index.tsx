@@ -32,6 +32,10 @@ const styles = (theme: Theme) => createStyles({
         verticalAlign: 'middle'
     },
 
+    sliderLabelContainer: {
+        marginBottom: -16
+    },
+
     sliderLabel: {
         paddingRight: 10
     }
@@ -96,7 +100,7 @@ export const LabelSlider = withStyles(styles)(class LabelSliderComponent extends
                     <MenuItem>Edit</MenuItem>
                     <MenuItem>Delete</MenuItem>
                 </Menu>
-                <Box display='flex' flexDirection='row' flex='100%' alignItems='baseline'>
+                <Box display='flex' flexDirection='row' flex='100%' alignItems='baseline' className={classes.sliderLabelContainer}>
                     <Typography variant="subtitle1" className={classes.sliderLabel}>{this.props.label}</Typography>
                     <Typography variant="caption" className={classes.sliderLabel}>({this.props.formatCallback(this.state.value)})</Typography>
                 </Box>
