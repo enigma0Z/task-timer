@@ -1,15 +1,31 @@
 import React, { Component } from 'react';
 
-import { AppBar, createStyles, Grid, IconButton, Paper, TextField, Theme, Toolbar, Typography, WithStyles, withStyles } from '@material-ui/core';
+import {
+    AppBar,
+    createStyles,
+    Drawer,
+    Grid,
+    IconButton,
+    List,
+    ListItem,
+    ListItemIcon,
+    ListItemSecondaryAction,
+    ListItemText,
+    Paper,
+    Switch,
+    Theme,
+    Toolbar,
+    Typography,
+    WithStyles, withStyles
+} from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
+import NotificationsIcon from '@material-ui/icons/Notifications';
 import Button from '@material-ui/core/Button/Button';
-
-// @ts-ignore
-import ReactNotifications from 'react-browser-notifications';
 
 import './App.css';
 import { LabelSlider } from './components/label-slider';
-import { Countdown } from './data/countdown'
+import { Countdown } from './data/model/countdown'
+import { TimeFormat } from './data/format/time'
 
 const styles = (theme: Theme) => createStyles({
     root: {
@@ -39,12 +55,14 @@ const styles = (theme: Theme) => createStyles({
 
     sliderBox: {
         paddingTop: 16
+    },
+
+    sideBar: {
+        width: 250
     }
 });
 
-interface AppProps extends WithStyles<typeof styles> {
-    countdowns: Countdown[]
-}
+interface AppProps extends WithStyles<typeof styles> { }
 
 interface AppState {
     workLength: number,
@@ -52,63 +70,46 @@ interface AppState {
     running: boolean,
     secondsLeft: number,
     currentCountdown: Countdown,
+    countdowns: Countdown[],
+    sidebarOpen: boolean,
+    notificationSupport: boolean,
     endTime?: number,
 }
 
-const defaultCountdowns: Countdown[] = [
+const APP_TITLE: string = 'Task Timer'
+const DEFAULT_COUNTDOWNS: Countdown[] = [
     new Countdown('Work', 1, 90, 50),
-    new Countdown('Break', 1, 15, 10),
+    new Countdown('Break time', 1, 15, 10),
 ]
 
-defaultCountdowns[0].setNext(defaultCountdowns[1])
-defaultCountdowns[1].setNext(defaultCountdowns[0])
-
-const APP_TITLE: string = 'Task Timer'
+DEFAULT_COUNTDOWNS[0].setNext(DEFAULT_COUNTDOWNS[1])
+DEFAULT_COUNTDOWNS[1].setNext(DEFAULT_COUNTDOWNS[0])
 
 const App = withStyles(styles)(class AppComponent extends Component<AppProps, AppState> {
-    static defaultProps = {
-        countdowns: defaultCountdowns
-    }
-
     private timer: any;
     public notification: any;
 
     constructor(props: AppProps) {
         super(props)
+
         this.state = {
             workLength: 50,
             breakLength: 10,
             running: false,
             secondsLeft: 0,
-            currentCountdown: this.props.countdowns[0],
+            sidebarOpen: false,
+            notificationSupport: "Notification" in window,
+            countdowns: DEFAULT_COUNTDOWNS,
+            currentCountdown: DEFAULT_COUNTDOWNS[0]
         }
 
         this.getButtonText = this.getButtonText.bind(this)
         this.handleStartStopOnClick = this.handleStartStopOnClick.bind(this)
         this.updateSecondsLeft = this.updateSecondsLeft.bind(this)
-        this.showNotification = this.showNotification.bind(this)
-        this.handleNotificationClick = this.handleNotificationClick.bind(this)
+        this.requestNotificationPermission = this.requestNotificationPermission.bind(this)
     }
 
-    getTimerText(timerSeconds: number): string {
-        let hours = Math.floor(timerSeconds / 60 / 60)
-        let minutes = Math.floor((timerSeconds - (hours * 60 * 60)) / 60)
-        let seconds = Math.floor(timerSeconds - (hours * 60 * 60) - (minutes * 60))
 
-        let returnStr: string[] = []
-
-        if (hours > 0) {
-            returnStr.push(`${hours}h`)
-        }
-
-        if (minutes > 0) {
-            returnStr.push(`${minutes}m`)
-        }
-
-        returnStr.push(`${seconds}s`)
-
-        return returnStr.join(' ')
-    }
 
     getButtonText() {
         if (this.state.running) {
@@ -126,21 +127,6 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
         return this.state.currentCountdown
     }
 
-    stopTimer(showNotification: boolean = true) {
-        console.log('Stopping, next timer:', this.getNextCountdown())
-        if (showNotification) {
-            this.state.currentCountdown.notification.show()
-        }
-
-        this.setState({
-            running: false,
-            secondsLeft: 0,
-            currentCountdown: this.getNextCountdown()
-        })
-
-        this.clearUpdateTimer()
-    }
-
     updateSecondsLeft() {
         if (this.state.endTime !== undefined) {
             let newSecondsLeft = (this.state.endTime - Date.now()) / 1000
@@ -148,6 +134,8 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                 this.setState({
                     secondsLeft: Math.floor(newSecondsLeft)
                 })
+
+                localStorage.setItem('secondsLeft', Math.floor(newSecondsLeft).toString())
 
                 this.setUpdateTimer()
             } else {
@@ -166,54 +154,61 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
         clearTimeout(this.timer)
     }
 
-    showNotification(message: string) {
-        // If the Notifications API is supported by the browser
-        // then show the notification
-        if(this.notification.supported()) {
-            this.notification.body = message;
-            this.notification.show();
+    startTimer() {
+        let now = Date.now()
+        let newEndTime = now + (this.state.currentCountdown.value * 60 * 1000)
+        let newSecondsLeft = this.state.currentCountdown.value * 60
+
+        this.setState({
+            running: true,
+            endTime: newEndTime,
+            secondsLeft: newSecondsLeft
+        })
+
+        localStorage.setItem('running', true.toString())
+        localStorage.setItem('endTime', newEndTime.toString())
+        localStorage.setItem('secondsLeft', newSecondsLeft.toString())
+        localStorage.setItem('currentCountdownName', this.state.currentCountdown.name)
+
+        this.setUpdateTimer()
+    }
+
+    stopTimer(showNotification: boolean = true) {
+        if (showNotification && this.state.notificationSupport) {
+            let notification = new Notification(
+                APP_TITLE,
+                {
+                    body: `${this.state.currentCountdown.name} completed!`,
+                }
+            )
+
+            notification.onclick = (event: Event) => { notification.close(); window.focus() }
         }
+
+        this.setState({
+            running: false,
+            secondsLeft: 0,
+            currentCountdown: this.getNextCountdown()
+        })
+
+        localStorage.setItem('running', false.toString())
+        localStorage.setItem('secondsLeft', '0')
+        localStorage.setItem('currentCountdownName', this.getNextCountdown().name)
+
+        this.clearUpdateTimer()
     }
 
     handleStartStopOnClick() {
         if (!this.state.running) {
-            this.setState({
-                running: true
-            })
-
-            let now = Date.now()
-            let newEndTime = now + (this.state.currentCountdown.value * 60 * 1000)
-            let newSecondsLeft = this.state.currentCountdown.value * 60
-
-            this.setState({
-                endTime: newEndTime,
-                secondsLeft: newSecondsLeft
-            })
-
-            this.setUpdateTimer()
+            this.startTimer()
         } else {
             this.stopTimer(false)
         }
     }
 
-    handleNotificationClick(event: any, countdown: Countdown) {
-        window.focus()
-        countdown.notification.close(event.target.tag);
-    }
-
     renderSliders() {
-        return this.props.countdowns.map((countdown) =>
+        return this.state.countdowns.map((countdown) =>
             <Grid item key={countdown.name}>
-                <ReactNotifications
-                    // @ts-ignore
-                    onRef={ref => (countdown.notification = ref)}
-                    title={APP_TITLE}
-                    body={`${countdown.name} completed!`}
-                    icon="icon.png"
-                    tag="task-timer"
-                    // @ts-ignore
-                    onClick={event => this.handleNotificationClick(event, countdown)}
-                />
                 <LabelSlider
                     label={countdown.name}
                     labelSuffix="m"
@@ -224,9 +219,41 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                     onChange={(value: number, thisCountdown: Countdown = countdown) => {
                         thisCountdown.value = value
                     }}
+                    formatCallback={(value: number) => TimeFormat.minutes(value)}
                 />
             </Grid>
         )
+    }
+
+    requestNotificationPermission() {
+        if (this.state.notificationSupport) {
+            if (Notification.permission === 'default') {
+                Notification.requestPermission()
+            } else if (Notification.permission === 'denied') {
+                alert('Notifications have been disabled, enable them in your browser')
+            }
+        }
+    }
+
+    componentDidMount() {
+        this.requestNotificationPermission()
+
+        // Load from state
+        const running = localStorage.getItem('running') === 'true'
+        const endTime = localStorage.getItem('endTime')
+        const secondsLeft = localStorage.getItem('secondsLeft')
+        const currentCountdown = this.state.countdowns.find((countdown: Countdown) => { return countdown.name === localStorage.getItem('currentCountdownName') })
+
+        this.setState({
+            running: running,
+            endTime: endTime ? parseInt(endTime) : this.state.endTime,
+            secondsLeft: secondsLeft ? parseInt(secondsLeft) : this.state.secondsLeft,
+            currentCountdown: currentCountdown ? currentCountdown : this.state.currentCountdown
+        })
+
+        if (running) {
+            this.setUpdateTimer()
+        }
     }
 
     render() {
@@ -235,23 +262,56 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
             <div className={classes.root}>
                 <AppBar position="static">
                     <Toolbar>
-                        <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
-                            <MenuIcon /> {/*Not implemented*/}
+                        <IconButton
+                            edge="start"
+                            className={classes.menuButton}
+                            color="inherit" aria-label="menu"
+                            onClick={() => { this.setState({ sidebarOpen: true }) }}
+                        >
+                            <MenuIcon />
                         </IconButton>
                         <Typography variant="h6" className={classes.title}>
                             {APP_TITLE}
                         </Typography>
                     </Toolbar>
                 </AppBar>
+                <Drawer
+                    anchor='left'
+                    open={this.state.sidebarOpen}
+                    onClose={() => { this.setState({ sidebarOpen: false }) }}
+                >
+                    <div className={classes.sideBar} >
+                        <List>
+                            <ListItem
+                                button
+                                onClick={this.requestNotificationPermission}
+                            >
+                                <ListItemIcon><NotificationsIcon /></ListItemIcon>
+                                <ListItemText primary="Notifications" />
+                                <ListItemSecondaryAction>
+                                    <Switch
+                                        edge="end"
+                                        onClick={this.requestNotificationPermission}
+                                        checked={this.state.notificationSupport && Notification.permission === 'granted'}
+                                        inputProps={{ 'aria-labelledby': 'switch-list-label-bluetooth' }}
+                                        disabled={this.state.notificationSupport === false}
+                                    />
+                                </ListItemSecondaryAction>
+                            </ListItem>
+                        </List>
+                    </div>
+                </Drawer>
                 <Grid container className={classes.gridContainer} spacing={2}>
                     <Grid item xs={12} lg={2}> <Paper className={classes.paperContainer}>
                         <Grid container direction="column" spacing={2}>
                             <Grid item>
                                 <Typography variant="h5">
-                                    Timer parameters
+                                    Timers
                                 </Typography>
                             </Grid>
-                            {this.renderSliders()}
+                            <Grid item>
+                                {this.renderSliders()}
+                            </Grid>
                             <Grid item>
                                 <Button variant="contained" className={classes.fillWidth} onClick={this.handleStartStopOnClick}>
                                     {this.getButtonText()}
@@ -262,7 +322,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                     <Grid item xs>
                         <Paper className={classes.paperContainer}>
                             <Typography variant="h5">{this.state.running ? "Running" : "On deck"}: {this.state.currentCountdown.name}</Typography>
-                            <Typography variant="h6">Time left {this.getTimerText(this.state.secondsLeft)}</Typography>
+                            <Typography variant="h6">Time left {TimeFormat.seconds(this.state.secondsLeft)}</Typography>
                             <Typography variant="caption">Up next: {this.getNextCountdown().name}</Typography>
                         </Paper>
                     </Grid>
