@@ -1,3 +1,4 @@
+import { Component } from 'react';
 import { Subscribable } from '../../data/Subscribable'
 
 export class NotificationService extends Subscribable {

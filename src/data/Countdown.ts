@@ -65,7 +65,8 @@ export class Countdown extends Subscribable {
         }
     }
 
-    public get name(): string { return this._name || '' }
+    public get name(): string { return this._name }
+    public set name(name: string) { this._name = name }
 
     public get secondsLeft(): number { return this._secondsLeft }
 
@@ -75,7 +76,11 @@ export class Countdown extends Subscribable {
     public set value(value: number) { this._value = value }
 
     public get min(): number { return this._min ? this._min : DEFAULT_MIN }
+    public set min(min: number) { this._min = min }
+
     public get max(): number { return this._max ? this._max : DEFAULT_MAX }
+    public set max(max: number) { this._max = max }
+
     public get intervalMs(): number { return this._intervalMs ? this._intervalMs : DEFAULT_INTERVAL_MS }
 
     public get endTime(): number | undefined { return this._endTime }

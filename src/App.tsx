@@ -94,6 +94,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
         this.handleStartStopOnClick = this.handleStartStopOnClick.bind(this)
         this.updateCountdownState = this.updateCountdownState.bind(this)
         this.updateSubscriber = this.updateSubscriber.bind(this)
+        this.saveCountdownsToLocalStorage = this.saveCountdownsToLocalStorage.bind(this)
     }
 
     get currentCountdown(): Countdown {
@@ -114,6 +115,10 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
             running: countdown.running
         })
 
+        this.saveCountdownsToLocalStorage()
+    }
+
+    saveCountdownsToLocalStorage() {
         localStorage.setItem(
             'countdowns',
             JSON.stringify(
@@ -173,6 +178,13 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                     max={countdown.max}
                     onChange={(value: number, thisCountdown: Countdown = countdown) => {
                         thisCountdown.value = value
+                        this.saveCountdownsToLocalStorage()
+                    }}
+                    onEditSave={(name: string, min: number, max: number) => {
+                        countdown.name = name
+                        countdown.min = min
+                        countdown.max = max
+                        this.saveCountdownsToLocalStorage()
                     }}
                     formatCallback={(value: number) => TimeFormat.minutes(value)}
                 />
