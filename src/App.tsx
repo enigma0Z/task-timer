@@ -18,7 +18,7 @@ import './App.css';
 import { LabelSlider } from './components/label-slider';
 import { Sidebar } from './components/sidebar';
 import { Countdown, CountdownJsonObject } from './data/Countdown'
-import { TimeFormat } from './data/format/time'
+import { TimeFormat } from './data/format/Time'
 
 import { NotificationService } from './services/notification'
 
