@@ -2,15 +2,18 @@
 
 ## Now
 
-* [ ] Snooze button
-* [ ] Progress widget to show visually how much of the countdown is left
-* [ ] Refactor App.tsx to move some of the code out to other modules (make it
+* [x] Refactor App.tsx to move some of the code out to other modules (make it
   less spaghetti)
+* [x] Configurable countdowns
+  * [x] Use local storage
+* [ ] Add / Delete countdowns
+* [ ] Global save button?
+* [ ] Global reset button?
 
 ## Next
 
-* [ ] Configurable countdowns
-  * Use local storage
+* [ ] Snooze button
+* [ ] Progress widget to show visually how much of the countdown is left
 
 ## Near
 
