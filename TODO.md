@@ -13,6 +13,7 @@
 * [ ] Add / Delete countdowns
 * [ ] Global save button?
 * [ ] Global reset button?
+* [ ] Better readme
 
 ## Next
 
