@@ -1,4 +1,3 @@
-import { Component } from 'react';
 import { Subscribable } from '../../data/Subscribable'
 
 export class NotificationService extends Subscribable {
@@ -25,7 +24,7 @@ export class NotificationService extends Subscribable {
     public requestDesktopNotificationPermissions() {
         if (this.desktopNotificationSupport && Notification.permission === 'default') {
             Notification.requestPermission()
-                .then((value) => {this.updateSubscribers()})
+                .then((value) => { this.updateSubscribers() })
         }
     }
 

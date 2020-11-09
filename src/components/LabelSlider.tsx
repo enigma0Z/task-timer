@@ -3,12 +3,10 @@ import React, { ChangeEvent, Component, KeyboardEvent, RefObject } from "react";
 import {
     Box,
     IconButton,
-    Menu,
-    MenuItem,
     Slider,
     Theme,
     Typography,
-    WithStyles, withStyles, createStyles, TextField, Card, Grid, Popover
+    WithStyles, withStyles, createStyles, TextField, Grid, Popover
 } from "@material-ui/core";
 
 import SettingsIcon from '@material-ui/icons/Settings';
