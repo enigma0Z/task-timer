@@ -13,7 +13,7 @@ import {
     WithStyles, withStyles
 } from '@material-ui/core';
 import NotificationsIcon from '@material-ui/icons/Notifications';
-import { NotificationService } from '../../services/notification';
+import { NotificationService } from '../services/notification';
 
 const styles = (theme: Theme) => createStyles({
     sideBar: {
