@@ -15,8 +15,8 @@ import MenuIcon from '@material-ui/icons/Menu';
 import Button from '@material-ui/core/Button/Button';
 
 import './App.css';
-import { LabelSlider } from './components/label-slider';
-import { Sidebar } from './components/sidebar';
+import { LabelSlider } from './components/LabelSlider';
+import { Sidebar } from './components/Sidebar';
 import { Countdown, CountdownJsonObject } from './data/Countdown'
 import { TimeFormat } from './data/format/Time'
 
