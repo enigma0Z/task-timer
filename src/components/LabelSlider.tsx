@@ -1,4 +1,4 @@
-import React, { ChangeEvent, Component } from "react";
+import React, { ChangeEvent, Component, KeyboardEvent, RefObject } from "react";
 
 import {
     Box,
@@ -8,7 +8,7 @@ import {
     Slider,
     Theme,
     Typography,
-    WithStyles, withStyles, createStyles, TextField,
+    WithStyles, withStyles, createStyles, TextField, Card, Grid, Popover
 } from "@material-ui/core";
 
 import SettingsIcon from '@material-ui/icons/Settings';
@@ -42,10 +42,12 @@ const styles = (theme: Theme) => createStyles({
         paddingRight: 10
     },
 
+    editPopover: {
+        padding: 8
+    },
+
     editContainer: {
         paddingRight: 8,
-        marginTop: -6,
-        marginBottom: -7
     }
 })
 
@@ -62,32 +64,36 @@ interface LabelSliderProps extends WithStyles<typeof styles> {
 }
 
 interface LabelSliderState {
-    label: string,
     value: number
+    label: string,
+    editLabel: string,
     min: number,
+    editMin: number,
     max: number,
+    editMax: number,
     step: number,
     menuOpen: boolean
     editing: boolean
-    anchor?: HTMLButtonElement
+    anchor?: HTMLElement
     labelError: boolean,
     minError: boolean,
-    maxError: boolean
+    maxError: boolean,
 }
 
 export const LabelSlider = withStyles(styles)(class LabelSliderComponent extends Component<LabelSliderProps, LabelSliderState> {
-    private startingLabel?: string = undefined
-    private startingMin?: number = undefined
-    private startingMax?: number = undefined
+    private popoverRef: RefObject<any>
 
     constructor(props: LabelSliderProps) {
         super(props)
         this.state = {
             value: this.props.value,
-            min: this.props.min,
-            max: this.props.max,
-            step: this.props.step,
             label: this.props.label,
+            editLabel: this.props.label,
+            min: this.props.min,
+            editMin: this.props.min,
+            max: this.props.max,
+            editMax: this.props.max,
+            step: this.props.step,
             menuOpen: false,
             editing: false,
             labelError: false,
@@ -95,7 +101,28 @@ export const LabelSlider = withStyles(styles)(class LabelSliderComponent extends
             maxError: false
         }
 
+        this.popoverRef = React.createRef()
+
         this.handleOnChange = this.handleOnChange.bind(this)
+        this.handleKeyPress = this.handleKeyPress.bind(this)
+        this.openPopover = this.openPopover.bind(this)
+        this.closePopover = this.closePopover.bind(this)
+        this.saveForm = this.saveForm.bind(this)
+        this.cancelEdit = this.cancelEdit.bind(this)
+        this.handleEscapeKeypress = this.handleEscapeKeypress.bind(this)
+    }
+
+    componentDidMount() {
+    }
+
+    componentWillUnmount() {
+        document.removeEventListener("keydown", this.handleEscapeKeypress, false);
+    }
+
+    handleEscapeKeypress(event: any) {
+        if (event.keyCode === 27) {
+            this.cancelEdit()
+        }
     }
 
     handleOnChange(event: any, newValue: number | number[]) {
@@ -110,31 +137,62 @@ export const LabelSlider = withStyles(styles)(class LabelSliderComponent extends
         }
 
         this.props.onChange(this.state.value)
-    };
+    }
+
+    handleKeyPress(event: KeyboardEvent) {
+        if (event.key === 'Enter') {
+            this.saveForm()
+        }
+    }
+
+    openPopover() {
+        this.setState({
+            editing: true,
+            editLabel: this.state.label,
+            editMin: this.state.min,
+            editMax: this.state.max
+        })
+
+        document.addEventListener("keydown", this.handleEscapeKeypress, false);
+    }
+
+    closePopover() {
+        this.setState({
+            editing: false
+        })
+
+        document.removeEventListener("keydown", this.handleEscapeKeypress, false);
+    }
+
+    saveForm() {
+        let value: number
+        if (this.state.value > this.state.max) {
+            value = this.state.max
+        } else if (this.state.value < this.state.min) {
+            value = this.state.min
+        } else (
+            value = this.state.value
+        )
+
+        this.props.onEditSave(this.state.editLabel, this.state.editMin, this.state.editMax)
+        this.setState({
+            value: value,
+            label: this.state.editLabel,
+            min: this.state.editMin,
+            max: this.state.editMax
+        })
+
+        this.closePopover()
+    }
+
+    cancelEdit() {
+        this.closePopover()
+    }
 
     renderNormalView() {
         const { classes } = this.props
         return (
-            <React.Fragment>
-                <Menu
-                    id="normalMenu"
-                    keepMounted
-                    open={this.state.menuOpen}
-                    anchorEl={this.state.anchor}
-                    onClose={() => {
-                        this.setState({ menuOpen: false })
-                    }}
-                >
-                    <MenuItem onClick={() => {
-                        this.startingLabel = this.state.label
-                        this.startingMin = this.state.min
-                        this.startingMax = this.state.max
-                        this.setState({ editing: true })
-                    }}>
-                        Edit
-                    </MenuItem>
-                    <MenuItem>Delete</MenuItem>
-                </Menu>
+            <>
                 <Box display='flex' flexDirection='row' flex='100%' alignItems='baseline' className={classes.sliderLabelContainer}>
                     <Typography variant="subtitle1" className={classes.sliderLabel}>{this.state.label}</Typography>
                     <Typography variant="caption" className={classes.sliderLabel}>({this.props.formatCallback(this.state.value)})</Typography>
@@ -154,142 +212,106 @@ export const LabelSlider = withStyles(styles)(class LabelSliderComponent extends
                     </Box>
                     <Box flex={1} display='flex' justifyContent='flex-end' alignItems='center'>
                         <IconButton onClick={(event) => {
-                            this.setState({
-                                anchor: event.currentTarget,
-                                menuOpen: true
-                            })
+                            this.openPopover()
                         }}>
                             <SettingsIcon />
                         </IconButton>
                     </Box>
                 </Box>
-            </React.Fragment>
+            </>
         )
     }
 
-    renderEditView() {
+    renderEditPopover() {
         const classes = this.props.classes
         return (
-            <React.Fragment>
-                <Box display='flex' flex={1} flexDirection='row'>
-                    <Box m={1} flex='100%' display='flex' justifyContent='flex-start' alignItems='center'>
-                        <Box className={classes.editContainer} flex={3}>
+            <Popover open={this.state.editing} anchorEl={this.popoverRef.current}>
+                <Box display='flex' flex={1} flexDirection='row' className={classes.editPopover}>
+                    <Grid container>
+                        <Grid item xs={6} className={classes.editContainer}>
                             <TextField
                                 fullWidth
                                 label="Name"
                                 error={this.state.labelError}
-                                value={this.state.label}
+                                value={this.state.editLabel}
                                 margin='dense'
                                 size='small'
                                 variant="standard"
                                 onChange={(event: ChangeEvent<HTMLTextAreaElement>) => {
                                     this.setState({
-                                        label: event.target.value,
+                                        editLabel: event.target.value,
                                         labelError: (
                                             event.target.value === ''
                                         )
                                     })
                                 }}
+                                onKeyPress={this.handleKeyPress}
                             />
-                        </Box>
-                        <Box className={classes.editContainer} flex={1}>
+                        </Grid>
+                        <Grid item xs={3} className={classes.editContainer}>
                             <TextField
                                 label="Min"
                                 error={this.state.minError}
+                                value={this.state.editMin}
                                 size='small'
                                 variant="outlined"
                                 margin='dense'
-                                value={this.state.min}
                                 onChange={(event: ChangeEvent<HTMLTextAreaElement>) => {
                                     const value = parseInt(event.target.value)
                                     this.setState({
-                                        min: value || 0,
+                                        editMin: value || 0,
                                         minError: (
                                             isNaN(value) || value < 1
                                         )
                                     })
                                 }}
+                                onKeyPress={this.handleKeyPress}
                             />
-                        </Box>
-                        <Box className={classes.editContainer} flex={1}>
+                        </Grid>
+                        <Grid item xs={3} className={classes.editContainer}>
                             <TextField
                                 label="Max"
                                 error={this.state.maxError}
+                                value={this.state.editMax}
                                 size='small'
                                 variant="outlined"
                                 margin='dense'
-                                value={this.state.max}
                                 onChange={(event: ChangeEvent<HTMLTextAreaElement>) => {
                                     const value = parseInt(event.target.value)
                                     this.setState({
-                                        max: value || 0,
+                                        editMax: value || 0,
                                         maxError: (
                                             isNaN(value) || value < 1 || value < this.state.min
                                         )
                                     })
                                 }}
+                                onKeyPress={this.handleKeyPress}
                             />
-                        </Box>
-                    </Box>
+                        </Grid>
+                    </Grid>
                     <Box flex={1} display='flex' justifyContent='flex-end' alignItems='center'>
-                        <IconButton onClick={(event) => {
-                            let value: number
-                            if (this.state.value > this.state.max) {
-                                value = this.state.max
-                            } else if (this.state.value < this.state.min) {
-                                value = this.state.min
-                            } else (
-                                value = this.state.value
-                            )
-
-                            this.props.onEditSave(this.state.label, this.state.min, this.state.max)
-                            this.setState({
-                                menuOpen: false,
-                                editing: false,
-                                value: value
-                            })
-                        }}>
+                        <IconButton onClick={this.saveForm}>
                             <CheckIcon />
                         </IconButton>
                         <IconButton onClick={(event) => {
-                            this.setState({
-                                menuOpen: false,
-                                editing: false,
-                            })
-
-                            if (
-                                this.startingLabel !== undefined &&
-                                this.startingMin !== undefined &&
-                                this.startingMax !== undefined
-                            ) {
-                                this.setState({
-                                    label: this.startingLabel,
-                                    min: this.startingMin,
-                                    max: this.startingMax
-                                })
-                            }
+                            this.cancelEdit()
                         }}>
                             <CancelIcon />
                         </IconButton>
                     </Box>
                 </Box>
-            </React.Fragment>
+            </Popover>
         )
-    }
-
-    renderCurrentView() {
-        if (this.state.editing) {
-            return this.renderEditView()
-        } else {
-            return this.renderNormalView()
-        }
     }
 
     render() {
         return (
-            <Box display='flex' flexDirection='column'>
-                {this.renderCurrentView()}
-            </Box>
+            <div ref={this.popoverRef}> {/* So the popover can have its origin on the row */}
+                <Box display='flex' flexDirection='column'>
+                    {this.renderNormalView()}
+                    {this.renderEditPopover()}
+                </Box>
+            </div>
         )
     }
 });
