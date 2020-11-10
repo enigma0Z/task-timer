@@ -6,10 +6,15 @@ import {
     Slider,
     Theme,
     Typography,
-    WithStyles, withStyles, createStyles, TextField, Grid, Popover
+    WithStyles,
+    withStyles,
+    createStyles,
+    TextField,
+    Grid,
+    Popover
 } from "@material-ui/core";
 
-import SettingsIcon from '@material-ui/icons/Settings';
+import EditOutlinedIcon from '@material-ui/icons/EditOutlined';
 import CancelIcon from '@material-ui/icons/Cancel';
 import CheckIcon from '@material-ui/icons/Check';
 
@@ -56,6 +61,7 @@ interface LabelSliderProps extends WithStyles<typeof styles> {
     step: number,
     min: number,
     max: number,
+    editing: boolean,
     onChange: Function,
     onEditSave: (name: string, min: number, max: number) => void,
     formatCallback: Function
@@ -81,6 +87,10 @@ interface LabelSliderState {
 export const LabelSlider = withStyles(styles)(class LabelSliderComponent extends Component<LabelSliderProps, LabelSliderState> {
     private popoverRef: RefObject<any>
 
+    static defaultProps = {
+        editing: false
+    }
+
     constructor(props: LabelSliderProps) {
         super(props)
         this.state = {
@@ -93,7 +103,7 @@ export const LabelSlider = withStyles(styles)(class LabelSliderComponent extends
             editMax: this.props.max,
             step: this.props.step,
             menuOpen: false,
-            editing: false,
+            editing: this.props.editing,
             labelError: false,
             minError: false,
             maxError: false
@@ -107,20 +117,14 @@ export const LabelSlider = withStyles(styles)(class LabelSliderComponent extends
         this.closePopover = this.closePopover.bind(this)
         this.saveForm = this.saveForm.bind(this)
         this.cancelEdit = this.cancelEdit.bind(this)
-        this.handleEscapeKeypress = this.handleEscapeKeypress.bind(this)
     }
 
-    componentDidMount() {
+    getMinError(min: number, max: number): boolean {
+        return isNaN(min) || min < 1 || min > max
     }
 
-    componentWillUnmount() {
-        document.removeEventListener("keydown", this.handleEscapeKeypress, false);
-    }
-
-    handleEscapeKeypress(event: any) {
-        if (event.keyCode === 27) {
-            this.cancelEdit()
-        }
+    getMaxError(min: number, max: number): boolean {
+        return isNaN(max) || max < 1 || max < min
     }
 
     handleOnChange(event: any, newValue: number | number[]) {
@@ -150,40 +154,45 @@ export const LabelSlider = withStyles(styles)(class LabelSliderComponent extends
             editMin: this.state.min,
             editMax: this.state.max
         })
-
-        document.addEventListener("keydown", this.handleEscapeKeypress, false);
     }
 
     closePopover() {
         this.setState({
             editing: false
         })
-
-        document.removeEventListener("keydown", this.handleEscapeKeypress, false);
     }
 
     saveForm() {
-        let value: number
-        if (this.state.value > this.state.max) {
-            value = this.state.max
-        } else if (this.state.value < this.state.min) {
-            value = this.state.min
-        } else (
-            value = this.state.value
-        )
+        if (!(this.state.labelError || this.state.minError || this.state.maxError)) {
+            let value: number
+            if (this.state.value > this.state.editMax) {
+                value = this.state.editMax
+            } else if (this.state.value < this.state.editMin) {
+                value = this.state.editMin
+            } else (
+                value = this.state.value
+            )
 
-        this.props.onEditSave(this.state.editLabel, this.state.editMin, this.state.editMax)
-        this.setState({
-            value: value,
-            label: this.state.editLabel,
-            min: this.state.editMin,
-            max: this.state.editMax
-        })
+            this.props.onEditSave(this.state.editLabel, this.state.editMin, this.state.editMax)
 
-        this.closePopover()
+            this.setState({
+                value: value,
+                label: this.state.editLabel,
+                min: this.state.editMin,
+                max: this.state.editMax
+            })
+
+            this.closePopover()
+        }
+
     }
 
     cancelEdit() {
+        this.setState({
+            labelError: false,
+            minError: false,
+            maxError: false
+        })
         this.closePopover()
     }
 
@@ -212,7 +221,7 @@ export const LabelSlider = withStyles(styles)(class LabelSliderComponent extends
                         <IconButton onClick={(event) => {
                             this.openPopover()
                         }}>
-                            <SettingsIcon />
+                            <EditOutlinedIcon />
                         </IconButton>
                     </Box>
                 </Box>
@@ -223,7 +232,14 @@ export const LabelSlider = withStyles(styles)(class LabelSliderComponent extends
     renderEditPopover() {
         const classes = this.props.classes
         return (
-            <Popover open={this.state.editing} anchorEl={this.popoverRef.current}>
+            <Popover
+                open={this.state.editing}
+                anchorEl={this.popoverRef.current}
+                anchorOrigin={{ vertical: 'center', horizontal: 'left' }}
+                transformOrigin={{ vertical: 'center', horizontal: 'left' }}
+                onClose={this.cancelEdit}
+                onEscapeKeyDown={this.cancelEdit}
+            >
                 <Box display='flex' flex={1} flexDirection='row' className={classes.editPopover}>
                     <Grid container>
                         <Grid item xs={6} className={classes.editContainer}>
@@ -234,7 +250,7 @@ export const LabelSlider = withStyles(styles)(class LabelSliderComponent extends
                                 value={this.state.editLabel}
                                 margin='dense'
                                 size='small'
-                                variant="standard"
+                                variant='outlined'
                                 onChange={(event: ChangeEvent<HTMLTextAreaElement>) => {
                                     this.setState({
                                         editLabel: event.target.value,
@@ -258,9 +274,8 @@ export const LabelSlider = withStyles(styles)(class LabelSliderComponent extends
                                     const value = parseInt(event.target.value)
                                     this.setState({
                                         editMin: value || 0,
-                                        minError: (
-                                            isNaN(value) || value < 1
-                                        )
+                                        minError: this.getMinError(value, this.state.max),
+                                        maxError: this.getMaxError(value, this.state.max)
                                     })
                                 }}
                                 onKeyPress={this.handleKeyPress}
@@ -278,9 +293,8 @@ export const LabelSlider = withStyles(styles)(class LabelSliderComponent extends
                                     const value = parseInt(event.target.value)
                                     this.setState({
                                         editMax: value || 0,
-                                        maxError: (
-                                            isNaN(value) || value < 1 || value < this.state.min
-                                        )
+                                        minError: this.getMinError(this.state.min, value),
+                                        maxError: this.getMaxError(this.state.min, value)
                                     })
                                 }}
                                 onKeyPress={this.handleKeyPress}
@@ -289,12 +303,10 @@ export const LabelSlider = withStyles(styles)(class LabelSliderComponent extends
                     </Grid>
                     <Box flex={1} display='flex' justifyContent='flex-end' alignItems='center'>
                         <IconButton onClick={this.saveForm}>
-                            <CheckIcon />
+                            <CheckIcon color='primary' />
                         </IconButton>
-                        <IconButton onClick={(event) => {
-                            this.cancelEdit()
-                        }}>
-                            <CancelIcon />
+                        <IconButton onClick={this.cancelEdit}>
+                            <CancelIcon color='secondary' />
                         </IconButton>
                     </Box>
                 </Box>

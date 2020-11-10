@@ -27,14 +27,13 @@ export class Countdown extends Subscribable {
     private _secondsLeft: number = 0;
 
     public constructor(
-        private _name: string = 'NO_NAME',
+        private _name: string = 'NEW',
         private _min: number = 1,
         private _max: number = 90,
         private _value: number = 0,
         private _intervalMs: number = 1000,
     ) {
         super()
-
     }
 
     public loadFromJsonObject(jsonObject: CountdownJsonObject): Countdown {
