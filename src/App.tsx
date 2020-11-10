@@ -428,11 +428,11 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                 >
                     <Fade in={this.state.confirmResetOpen}>
                         <Card className={classes.modal}>
-                            <Grid container direction='column'>
-                                <Grid item xs alignContent='center' alignItems='center'>
+                            <Grid container direction='column' alignItems='center' alignContent='center'>
+                                <Grid item xs>
                                     <Typography variant='h4'>Are you sure?</Typography>
                                 </Grid>
-                                <Grid item xs alignContent='center' alignItems='center'>
+                                <Grid item xs>
                                     <Typography variant='subtitle1'>Resetting your countdowns cannot be undone</Typography><br />
                                 </Grid>
                                 <Button
@@ -517,11 +517,11 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                                 >
                                     <Fade in={this.state.confirmDeleteOpen}>
                                         <Card className={classes.modal}>
-                                            <Grid container direction='column'>
-                                                <Grid item xs alignContent='center' alignItems='center'>
+                                            <Grid container direction='column' alignItems='center' alignContent='center'>
+                                                <Grid item xs>
                                                     <Typography variant='h4'>Are you sure?</Typography>
                                                 </Grid>
-                                                <Grid item xs alignContent='center' alignItems='center'>
+                                                <Grid item xs>
                                                     <Typography variant='subtitle1'>Deleting this cannot be undone</Typography><br />
                                                 </Grid>
                                                 <Button
@@ -538,7 +538,6 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                                                         Yes, delete {this.state.confirmDeleteName}
                                                     </Grid>
                                                 </Button>
-                                                {/* <p id="transition-modal-description">react-transition-group animates me.</p> */}
                                             </Grid>
                                         </Card>
                                     </Fade>
