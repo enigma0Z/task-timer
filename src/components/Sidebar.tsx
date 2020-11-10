@@ -14,6 +14,7 @@ import {
 } from '@material-ui/core';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import { NotificationService } from '../services/notification';
+import App from '../App';
 
 const styles = (theme: Theme) => createStyles({
     sideBar: {
@@ -25,7 +26,8 @@ const notificationService: NotificationService = NotificationService.instance
 
 interface SidebarProps extends WithStyles<typeof styles> {
     onOpen: Function,
-    onClose: Function
+    onClose: Function,
+    resetCallback: () => void
 }
 
 interface SidebarState {
@@ -93,6 +95,12 @@ export const Sidebar = withStyles(styles)(class SidebarComponent extends Compone
                                     disabled={!notificationService.desktopNotificationSupport}
                                 />
                             </ListItemSecondaryAction>
+                        </ListItem>
+                        <ListItem
+                            button
+                            onClick={this.props.resetCallback}
+                        >
+                            <ListItemText primary='Reset to defaults' />
                         </ListItem>
                     </List>
                 </div>

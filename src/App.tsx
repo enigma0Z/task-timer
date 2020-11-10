@@ -102,6 +102,7 @@ interface AppState {
     confirmDeleteOpen: boolean
     confirmDeleteIndex: number
     confirmDeleteName: string
+    confirmResetOpen: boolean
 }
 
 const APP_TITLE: string = 'Task Timer'
@@ -130,7 +131,8 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
             editingOrder: false,
             confirmDeleteOpen: false,
             confirmDeleteIndex: 0,
-            confirmDeleteName: ''
+            confirmDeleteName: '',
+            confirmResetOpen: false,
         }
 
         this.handleStartStopOnClick = this.handleStartStopOnClick.bind(this)
@@ -218,11 +220,15 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
     }
 
     deleteCountdown(index: number) {
+        let newCountdowns = [
+            ...this.state.countdowns.slice(0, index),
+            ...this.state.countdowns.slice(index + 1)
+        ]
+
+        this.saveCountdownsToLocalStorage(newCountdowns)
+
         this.setState({
-            countdowns: [
-                ...this.state.countdowns.slice(0, index),
-                ...this.state.countdowns.slice(index + 1)
-            ]
+            countdowns: newCountdowns
         })
     }
 
@@ -239,11 +245,11 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
         this.saveCountdownsToLocalStorage()
     }
 
-    saveCountdownsToLocalStorage() {
+    saveCountdownsToLocalStorage(countdowns: Countdown[] = this.state.countdowns) {
         localStorage.setItem(
             'countdowns',
             JSON.stringify(
-                this.state.countdowns.map((countdown) => countdown.exportToJsonObject())
+                countdowns.map((countdown) => countdown.exportToJsonObject())
             )
         )
     }
@@ -399,7 +405,57 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                     onClose={() => {
                         this.setState({ sidebarOpen: false })
                     }}
+                    resetCallback={() => {
+                        this.setState({
+                            confirmResetOpen: true,
+                            sidebarOpen: false
+                        })
+                    }}
                 />
+                <Modal
+                    open={this.state.confirmResetOpen}
+                    onClose={() => {
+                        this.setState({
+                            confirmResetOpen: false
+                        })
+                    }}
+                    closeAfterTransition
+                    className={classes.modal}
+                    BackdropComponent={Backdrop}
+                    BackdropProps={{
+                        timeout: 500,
+                    }}
+                >
+                    <Fade in={this.state.confirmResetOpen}>
+                        <Card className={classes.modal}>
+                            <Grid container direction='column'>
+                                <Grid item xs alignContent='center' alignItems='center'>
+                                    <Typography variant='h4'>Are you sure?</Typography>
+                                </Grid>
+                                <Grid item xs alignContent='center' alignItems='center'>
+                                    <Typography variant='subtitle1'>Resetting your countdowns cannot be undone</Typography><br />
+                                </Grid>
+                                <Button
+                                    color='secondary'
+                                    variant='contained'
+                                    onClick={() => {
+                                        this.setState({
+                                            confirmResetOpen: false,
+                                            countdowns: DEFAULT_COUNTDOWNS
+                                        })
+
+                                        this.saveCountdownsToLocalStorage(DEFAULT_COUNTDOWNS)
+                                    }}
+                                >
+                                    <Grid item xs>
+                                        Yes, reset
+                                    </Grid>
+                                </Button>
+                                {/* <p id="transition-modal-description">react-transition-group animates me.</p> */}
+                            </Grid>
+                        </Card>
+                    </Fade>
+                </Modal>
                 <Grid container className={classes.gridContainer} spacing={2}>
                     <Grid item xs={12} md={8} lg={4}> <Paper className={classes.paperContainer}>
                         <Grid container direction="column" spacing={2}>
@@ -412,11 +468,15 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                                         <IconButton
                                             disabled={this.state.editingOrder}
                                             onClick={() => {
+                                                let newCountdowns = [
+                                                    ...this.state.countdowns,
+                                                    new Countdown(`NEW ${this.state.countdowns.length}`)
+                                                ]
+
+                                                this.saveCountdownsToLocalStorage(newCountdowns)
+
                                                 this.setState({
-                                                    countdowns: [
-                                                        ...this.state.countdowns,
-                                                        new Countdown(`NEW ${this.state.countdowns.length}`)
-                                                    ]
+                                                    countdowns: newCountdowns
                                                 })
                                             }}
                                         >
@@ -475,7 +535,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                                                     }}
                                                 >
                                                     <Grid item xs>
-                                                            Yes, delete {this.state.confirmDeleteName}
+                                                        Yes, delete {this.state.confirmDeleteName}
                                                     </Grid>
                                                 </Button>
                                                 {/* <p id="transition-modal-description">react-transition-group animates me.</p> */}
