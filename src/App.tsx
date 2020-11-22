@@ -541,11 +541,9 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                             </Grid>
                         </Grid>
                     </Paper> </Grid>
-                    <Grid item xs={12} sm={4} lg={6}>
-                        <Paper className={classes.paperContainer}>
-                            <Typography variant="h5">Test</Typography>
-                        </Paper>
-                    </Grid>
+                    {/* <Grid item xs={12} sm={4} lg={6}> <Paper className={classes.paperContainer}>
+                        <Typography variant="h5">Test</Typography>
+                    </Paper> </Grid> */}
                 </Grid>
             </div >
         );
