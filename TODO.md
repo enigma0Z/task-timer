@@ -11,12 +11,13 @@
 * [x] Fix subcomponents using callbacks for open state prop
 * [x] Refactor cancel modal component into its own thing
 * [X] Warning notification (5m remaining)
+* [X] Add scheduled checks feature (e.g. lunchtime)
 
 ## Now
 
 * [ ] History view
-* [ ] Add scheduled checks feature (e.g. lunchtime)
-* [ ] Add out-of-band timers (such as a meeting) or a pause feature
+* [ ] Pause feature
+* [ ] Add out-of-band timers (such as a meeting)
 * [ ] Fix editing not saving min max
 * [ ] Global save button?
 * [ ] Better readme
@@ -24,6 +25,7 @@
 
 ## Next
 
+* [ ] Configurable schedule
 * [ ] Configurable warning notification
 * [ ] Progress widget to show visually how much of the countdown is left
 * [ ] Better theme

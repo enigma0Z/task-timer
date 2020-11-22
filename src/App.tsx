@@ -30,6 +30,13 @@ import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 import SettingsIcon from '@material-ui/icons/Settings';
 import AddIcon from '@material-ui/icons/Add';
 
+import 'date-fns';
+import DateFnsUtils from '@date-io/date-fns';
+import {
+    MuiPickersUtilsProvider,
+    KeyboardTimePicker,
+} from '@material-ui/pickers';
+
 const styles = (theme: Theme) => createStyles({
     root: {
         flexGrow: 1,
@@ -104,6 +111,7 @@ interface AppState {
     confirmDeleteName: string
     confirmResetOpen: boolean
     warningNotificationSent: boolean
+    selectedDate: Date
 }
 
 const APP_TITLE: string = 'Task Timer'
@@ -140,6 +148,8 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
             running = true
         }
 
+        const selectedDate = localStorage.getItem('selectedDate')
+
         this.state = {
             workLength: 50,
             breakLength: 10,
@@ -154,7 +164,8 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
             confirmDeleteIndex: 0,
             confirmDeleteName: '',
             confirmResetOpen: false,
-            warningNotificationSent: false
+            warningNotificationSent: false,
+            selectedDate: selectedDate ? new Date(JSON.parse(selectedDate)) : new Date(0, 0, 0, 12)
         }
 
         this.handleStartStopOnClick = this.handleStartStopOnClick.bind(this)
@@ -163,6 +174,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
         this.saveCountdownsToLocalStorage = this.saveCountdownsToLocalStorage.bind(this)
         this.swapCountdowns = this.swapCountdowns.bind(this)
         this.deleteCountdown = this.deleteCountdown.bind(this)
+        this.checkSchedule = this.checkSchedule.bind(this)
     }
 
     componentDidMount() {
@@ -170,6 +182,8 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
         if (this.state.running) {
             this.currentCountdown.subscribe(this.constructor.name, this.updateSubscriber)
         }
+
+        this.checkSchedule()
     }
 
     get currentCountdown(): Countdown {
@@ -188,6 +202,20 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
         return (this.state.currentCountdownIndex + 1) % this.state.countdowns.length
     }
 
+    checkSchedule() {
+        const now = new Date()
+        if (
+            now.getHours() === this.state.selectedDate.getHours()
+            && now.getMinutes() === this.state.selectedDate.getMinutes()
+        ) {
+            notificationService.showNotification(APP_TITLE, {
+                body: "It's lunchtime!"
+            })
+        }
+
+        setTimeout(() => this.checkSchedule(), 1000 * 50)
+    }
+
     swapCountdowns(a: number, b: number) {
         let lower: number
         let higher: number
@@ -201,11 +229,6 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
             throw new RangeError('Cannot swap an element with itself')
         }
 
-        console.log({
-            lower: lower,
-            higher: higher
-        })
-
         if (this.state.currentCountdownIndex === lower) this.setState({ currentCountdownIndex: higher })
         else if (this.state.currentCountdownIndex === higher) this.setState({ currentCountdownIndex: lower })
 
@@ -215,11 +238,6 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
             this.state.countdowns[lower],
             ...this.state.countdowns.slice(higher + 1)
         ]
-
-        console.log({
-            currentCountdowns: this.state.countdowns,
-            newCountdowns: newCountdowns
-        })
 
         this.setState({
             countdowns: newCountdowns
@@ -281,7 +299,6 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                 )
             }
         } else {
-            console.log('Stopping countdown')
             notificationService.showNotification(
                 APP_TITLE,
                 {
@@ -375,7 +392,6 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                     </Grid>
                 )
             } else {
-                console.log(countdown.name, countdown.value)
                 elements.push(
                     <Grid item key={countdown.name}>
                         <LabelSlider
@@ -387,7 +403,6 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                             max={countdown.max}
                             onChange={(value: number, thisCountdown: Countdown = countdown) => {
                                 thisCountdown.value = value
-                                console.log('value', value, this.state.countdowns, thisCountdown)
                                 this.saveCountdownsToLocalStorage()
                             }}
                             onEditSave={(name: string, min: number, max: number) => {
@@ -561,13 +576,26 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                             </Grid>
                         </Grid>
                     </Paper> </Grid>
-                    <Grid item xs={12} sm={4} lg={6}> <Paper className={classes.paperContainer}>
+                    <Grid item xs={12} md={4} lg={6}> <Paper className={classes.paperContainer}>
                         <Grid container>
                             <Grid item xs={12}>
                                 <Typography variant="h3">Schedule</Typography>
                             </Grid>
                             <Grid item xs={12}>
-
+                                <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                                    <KeyboardTimePicker
+                                        id="lunch-time-picker"
+                                        label="Lunch"
+                                        value={this.state.selectedDate}
+                                        onChange={(date: any) => {
+                                            this.setState({
+                                                selectedDate: date
+                                            })
+                                            localStorage.setItem('selectedDate', JSON.stringify(date))
+                                        }}
+                                        minutesStep={1}
+                                    />
+                                </MuiPickersUtilsProvider>
                             </Grid>
                         </Grid>
                     </Paper> </Grid>
