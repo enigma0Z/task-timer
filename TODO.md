@@ -20,7 +20,6 @@
 * [ ] Timer complete modal
 * [ ] Add out-of-band timers (such as a meeting)
 * [ ] Fix editing not saving min max
-* [ ] Global save button?
 * [ ] Better readme
 * [ ] Add "You haven't started the next thing" reminder
 
@@ -35,3 +34,7 @@
 ## Near
 
 * [ ] IOS / Android app
+
+## Won't do
+
+* [ ] Global save button?
