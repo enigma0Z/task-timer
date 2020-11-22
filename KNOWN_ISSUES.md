@@ -8,5 +8,6 @@
 * [ ] Some scenarios will cause a bunch of notifications to be sent all at once
   * I suspect this is related to the subscriber being updated that the countdown
     is complete but not being unsubscribed
-* [ ] Timers not rolling over when completed (e.g. work completes, break is not
+* [X] Timers not rolling over when completed (e.g. work completes, break is not
   queued up to be on deck)
+* [ ] Notifications broke on Firefox for some reason

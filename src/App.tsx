@@ -262,14 +262,17 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
     updateSubscriber() {
         this.updateCountdownState(this.currentCountdown)
 
-        if (!this.currentCountdown.running) {
+        if (this.currentCountdown.running) {
+            this.updateCountdownState(this.currentCountdown)
+        } else {
+            console.log('Stopping countdown')
             notificationService.showNotification(
                 APP_TITLE,
                 {
                     body: `${this.currentCountdown.name} done`
                 }
             )
-            this.currentCountdown.unsubscribe(this.constructor.name)
+            this.stopTimer()
         }
     }
 
