@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 
 import {
     createStyles,
+    Divider,
     Drawer,
     List,
     ListItem,
@@ -14,7 +15,6 @@ import {
 } from '@material-ui/core';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import { NotificationService } from '../services/notification';
-import App from '../App';
 
 const styles = (theme: Theme) => createStyles({
     sideBar: {
@@ -25,13 +25,12 @@ const styles = (theme: Theme) => createStyles({
 const notificationService: NotificationService = NotificationService.instance
 
 interface SidebarProps extends WithStyles<typeof styles> {
-    onOpen: Function,
+    open: boolean,
     onClose: Function,
     resetCallback: () => void
 }
 
 interface SidebarState {
-    open: boolean,
     notificationsEnabled: boolean
 }
 
@@ -39,11 +38,8 @@ export const Sidebar = withStyles(styles)(class SidebarComponent extends Compone
     constructor(props: SidebarProps) {
         super(props)
         this.state = {
-            open: false,
             notificationsEnabled: notificationService.desktopNotificationEnabled
         }
-
-        // this.refreshNotificationState = this.refreshNotificationState.bind(this)
     }
 
     refreshNotificationState() {
@@ -73,7 +69,7 @@ export const Sidebar = withStyles(styles)(class SidebarComponent extends Compone
         return (
             <Drawer
                 anchor='left'
-                open={this.props.onOpen()}
+                open={this.props.open}
                 onClose={() => this.props.onClose()}
             >
                 <div className={classes.sideBar} >
@@ -96,6 +92,7 @@ export const Sidebar = withStyles(styles)(class SidebarComponent extends Compone
                                 />
                             </ListItemSecondaryAction>
                         </ListItem>
+                        <Divider />
                         <ListItem
                             button
                             onClick={this.props.resetCallback}
