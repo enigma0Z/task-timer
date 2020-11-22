@@ -5,6 +5,7 @@ const DEFAULT_MIN = 1
 const DEFAULT_MAX = 90
 const DEFAULT_INTERVAL_MS = 1000
 
+const SHORT_TIMER = false // For debug purposes
 export interface CountdownJsonObject {
     startTime?: any,
     endTime?: any,
@@ -87,7 +88,11 @@ export class Countdown extends Subscribable {
     start() {
         this._running = true
         this.startTime = Date.now()
-        this._endTime = this.startTime + (this.value * 60 * 1000)
+        if (SHORT_TIMER) {
+            this._endTime = this.startTime + 2 * 1000
+        } else {
+            this._endTime = this.startTime + (this.value * 60 * 1000)
+        }
 
         this.update()
     }
