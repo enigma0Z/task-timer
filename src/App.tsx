@@ -103,6 +103,7 @@ interface AppState {
     confirmDeleteIndex: number
     confirmDeleteName: string
     confirmResetOpen: boolean
+    warningNotificationSent: boolean
 }
 
 const APP_TITLE: string = 'Task Timer'
@@ -153,6 +154,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
             confirmDeleteIndex: 0,
             confirmDeleteName: '',
             confirmResetOpen: false,
+            warningNotificationSent: false
         }
 
         this.handleStartStopOnClick = this.handleStartStopOnClick.bind(this)
@@ -263,12 +265,28 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
 
         if (this.currentCountdown.running) {
             this.updateCountdownState(this.currentCountdown)
+            if (
+                !this.state.warningNotificationSent
+                && this.currentCountdown.secondsLeft < 300
+                && this.currentCountdown.secondsLeft > 240
+            ) {
+                this.setState({
+                    warningNotificationSent: true
+                })
+
+                notificationService.showNotification(
+                    APP_TITLE,
+                    {
+                        body: `Stopping soon: ${this.currentCountdown.name}`
+                    }
+                )
+            }
         } else {
             console.log('Stopping countdown')
             notificationService.showNotification(
                 APP_TITLE,
                 {
-                    body: `${this.currentCountdown.name} done`
+                    body: `Complete: ${this.currentCountdown.name}`
                 }
             )
             this.stopTimer()
@@ -286,7 +304,8 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
         this.updateCountdownState(this.currentCountdown)
 
         this.setState({
-            currentCountdownIndex: this.nextCountdownIndex
+            currentCountdownIndex: this.nextCountdownIndex,
+            warningNotificationSent: false
         })
 
         localStorage.setItem('currentCountdownIndex', this.nextCountdownIndex.toString())
