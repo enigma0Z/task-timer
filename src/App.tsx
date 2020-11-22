@@ -2,14 +2,11 @@ import React, { Component } from 'react';
 
 import {
     AppBar,
-    Backdrop,
     Box,
     Card,
     createStyles,
-    Fade,
     Grid,
     IconButton,
-    Modal,
     Paper,
     Theme,
     Toolbar,
@@ -20,6 +17,7 @@ import Button from '@material-ui/core/Button/Button';
 
 import { LabelSlider } from './components/LabelSlider';
 import { Sidebar } from './components/Sidebar';
+import { ConfirmationModal } from './components/ConfirmationModal';
 import { Countdown, CountdownJsonObject } from './data/Countdown'
 import { TimeFormat } from './data/format/Time'
 
@@ -35,6 +33,7 @@ import AddIcon from '@material-ui/icons/Add';
 const styles = (theme: Theme) => createStyles({
     root: {
         flexGrow: 1,
+        overflow: 'hidden'
     },
 
     fillWidth: {
@@ -62,14 +61,11 @@ const styles = (theme: Theme) => createStyles({
         paddingTop: 16
     },
 
-    popperStyle: {
-        width: '100%',
-    },
-
     popperCardStyle: {
         paddingLeft: theme.spacing(1),
         backgroundColor: theme.palette.grey[50],
         margin: 8,
+        height: '100%'
     },
 
     popperContentsStyle: {
@@ -154,16 +150,18 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                 return new Countdown().loadFromJsonObject(countdownJsonObject)
             })
 
-            this.setState({
-                countdowns: countdowns,
-            })
+            if (countdowns.length > 0) {
+                this.setState({
+                    countdowns: countdowns,
+                })
 
-            const runningCountdown: Countdown = countdowns.filter((countdown: Countdown) => { return countdown.running })[0]
+                const runningCountdown: Countdown = countdowns.filter((countdown: Countdown) => { return countdown.running })[0]
 
-            if (runningCountdown) {
-                runningCountdown.update()
-                runningCountdown.subscribe(this.constructor.name, this.updateSubscriber)
-                this.updateCountdownState(runningCountdown)
+                if (runningCountdown) {
+                    runningCountdown.update()
+                    runningCountdown.subscribe(this.constructor.name, this.updateSubscriber)
+                    this.updateCountdownState(runningCountdown)
+                }
             }
         }
 
@@ -173,7 +171,15 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
     }
 
     get currentCountdown(): Countdown {
-        return this.state.countdowns[this.state.currentCountdownIndex]
+        if (this.state.countdowns[this.state.currentCountdownIndex] === undefined) {
+            this.setState({
+                currentCountdownIndex: 0
+            })
+            localStorage.setItem('currentCountdownIndex', '0')
+            return this.state.countdowns[0]
+        } else {
+            return this.state.countdowns[this.state.currentCountdownIndex]
+        }
     }
 
     get nextCountdownIndex(): number {
@@ -366,6 +372,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                                 countdown.name = name
                                 countdown.min = min
                                 countdown.max = max
+                                this.forceUpdate()
                                 this.saveCountdownsToLocalStorage()
                             }}
                             formatCallback={(value: number) => TimeFormat.minutes(value)}
@@ -400,7 +407,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                     </Toolbar>
                 </AppBar>
                 <Sidebar
-                    onOpen={() => this.state.sidebarOpen}
+                    open={this.state.sidebarOpen}
                     onClose={() => {
                         this.setState({ sidebarOpen: false })
                     }}
@@ -411,53 +418,26 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                         })
                     }}
                 />
-                <Modal
+                <ConfirmationModal
                     open={this.state.confirmResetOpen}
                     onClose={() => {
                         this.setState({
                             confirmResetOpen: false
                         })
                     }}
-                    closeAfterTransition
-                    className={classes.modal}
-                    BackdropComponent={Backdrop}
-                    BackdropProps={{
-                        timeout: 500,
-                    }}
-                >
-                    <Fade in={this.state.confirmResetOpen}>
-                        <Card className={classes.modal}>
-                            <Grid container direction='column' alignItems='center' alignContent='center'>
-                                <Grid item xs>
-                                    <Typography variant='h4'>Are you sure?</Typography>
-                                </Grid>
-                                <Grid item xs>
-                                    <Typography variant='subtitle1'>Resetting your countdowns cannot be undone</Typography><br />
-                                </Grid>
-                                <Button
-                                    color='secondary'
-                                    variant='contained'
-                                    onClick={() => {
-                                        this.setState({
-                                            confirmResetOpen: false,
-                                            countdowns: DEFAULT_COUNTDOWNS
-                                        })
+                    onConfirm={() => {
+                        this.setState({
+                            confirmResetOpen: false,
+                            countdowns: DEFAULT_COUNTDOWNS
+                        })
 
-                                        this.saveCountdownsToLocalStorage(DEFAULT_COUNTDOWNS)
-                                    }}
-                                >
-                                    <Grid item xs>
-                                        Yes, reset
-                                    </Grid>
-                                </Button>
-                                {/* <p id="transition-modal-description">react-transition-group animates me.</p> */}
-                            </Grid>
-                        </Card>
-                    </Fade>
-                </Modal>
+                        this.saveCountdownsToLocalStorage(DEFAULT_COUNTDOWNS)
+                    }}
+                    subtitle='Resetting your countdowns cannot be undone'
+                />
                 <Grid container className={classes.gridContainer} spacing={2}>
                     <Grid item xs={12} md={8} lg={4}> <Paper className={classes.paperContainer}>
-                        <Grid container direction="column" spacing={2}>
+                        <Grid container direction="column">
                             <Grid item>
                                 <Box display='flex' flexDirection="row">
                                     <Box flex='100%'>
@@ -500,47 +480,21 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                                 </Box>
                             </Grid>
                             <Grid item>
-                                <Modal
+                                <ConfirmationModal
                                     open={this.state.confirmDeleteOpen}
                                     onClose={() => {
                                         this.setState({
                                             confirmDeleteOpen: false
                                         })
                                     }}
-                                    closeAfterTransition
-                                    className={classes.modal}
-                                    BackdropComponent={Backdrop}
-                                    BackdropProps={{
-                                        timeout: 500,
+                                    onConfirm={() => {
+                                        this.deleteCountdown(this.state.confirmDeleteIndex)
+                                        this.setState({
+                                            confirmDeleteOpen: false
+                                        })
                                     }}
-                                >
-                                    <Fade in={this.state.confirmDeleteOpen}>
-                                        <Card className={classes.modal}>
-                                            <Grid container direction='column' alignItems='center' alignContent='center'>
-                                                <Grid item xs>
-                                                    <Typography variant='h4'>Are you sure?</Typography>
-                                                </Grid>
-                                                <Grid item xs>
-                                                    <Typography variant='subtitle1'>Deleting this cannot be undone</Typography><br />
-                                                </Grid>
-                                                <Button
-                                                    color='secondary'
-                                                    variant='contained'
-                                                    onClick={() => {
-                                                        this.deleteCountdown(this.state.confirmDeleteIndex)
-                                                        this.setState({
-                                                            confirmDeleteOpen: false
-                                                        })
-                                                    }}
-                                                >
-                                                    <Grid item xs>
-                                                        Yes, delete {this.state.confirmDeleteName}
-                                                    </Grid>
-                                                </Button>
-                                            </Grid>
-                                        </Card>
-                                    </Fade>
-                                </Modal>
+                                    subtitle='Deleting this cannot be undone'
+                                />
                                 {this.renderSliders()}
                             </Grid>
                             <Grid item>
