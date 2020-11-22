@@ -62,7 +62,7 @@ interface LabelSliderProps extends WithStyles<typeof styles> {
     min: number,
     max: number,
     editing: boolean,
-    onChange: Function,
+    onChange: (value: number) => void,
     onEditSave: (name: string, min: number, max: number) => void,
     formatCallback: Function
 }
@@ -132,13 +132,14 @@ export const LabelSlider = withStyles(styles)(class LabelSliderComponent extends
             this.setState({
                 value: newValue
             })
+            this.props.onChange(newValue)
         } else if (typeof newValue === 'object') {
             this.setState({
                 value: newValue[0]
             })
+            this.props.onChange(newValue[0])
         }
 
-        this.props.onChange(this.state.value)
     }
 
     handleKeyPress(event: KeyboardEvent) {
