@@ -12,11 +12,12 @@
 * [x] Refactor cancel modal component into its own thing
 * [X] Warning notification (5m remaining)
 * [X] Add scheduled checks feature (e.g. lunchtime)
+* [X] Pause feature
 
 ## Now
 
 * [ ] History view
-* [ ] Pause feature
+* [ ] Timer complete modal
 * [ ] Add out-of-band timers (such as a meeting)
 * [ ] Fix editing not saving min max
 * [ ] Global save button?
