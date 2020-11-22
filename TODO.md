@@ -27,6 +27,7 @@
 * [ ] Configurable warning notification
 * [ ] Progress widget to show visually how much of the countdown is left
 * [ ] Better theme
+* [ ] Better unit tests
 
 ## Near
 
