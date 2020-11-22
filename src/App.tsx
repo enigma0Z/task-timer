@@ -79,6 +79,11 @@ const styles = (theme: Theme) => createStyles({
         padding: 8,
         border: 'none'
     },
+
+    statusStyle: {
+        marginTop: -0.5,
+        marginBottom: -1
+    }
 });
 
 interface AppProps extends WithStyles<typeof styles> { }
@@ -260,7 +265,6 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
     }
 
     updateSubscriber() {
-        this.updateCountdownState(this.currentCountdown)
 
         if (this.currentCountdown.running) {
             this.updateCountdownState(this.currentCountdown)
@@ -438,10 +442,25 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                     }}
                     subtitle='Resetting your countdowns cannot be undone'
                 />
+                <ConfirmationModal
+                    open={this.state.confirmDeleteOpen}
+                    onClose={() => {
+                        this.setState({
+                            confirmDeleteOpen: false
+                        })
+                    }}
+                    onConfirm={() => {
+                        this.deleteCountdown(this.state.confirmDeleteIndex)
+                        this.setState({
+                            confirmDeleteOpen: false
+                        })
+                    }}
+                    subtitle='Deleting this cannot be undone'
+                />
                 <Grid container className={classes.gridContainer} spacing={2}>
-                    <Grid item xs={12} md={8} lg={4}> <Paper className={classes.paperContainer}>
-                        <Grid container direction="column">
-                            <Grid item>
+                    <Grid item xs={12} md={8} lg={6}> <Paper className={classes.paperContainer}>
+                        <Grid container>
+                            <Grid item xs={12}>
                                 <Box display='flex' flexDirection="row">
                                     <Box flex='100%'>
                                         <Typography variant="h3"> Timers </Typography>
@@ -482,40 +501,53 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                                     </Box>
                                 </Box>
                             </Grid>
-                            <Grid item>
-                                <ConfirmationModal
-                                    open={this.state.confirmDeleteOpen}
-                                    onClose={() => {
-                                        this.setState({
-                                            confirmDeleteOpen: false
-                                        })
-                                    }}
-                                    onConfirm={() => {
-                                        this.deleteCountdown(this.state.confirmDeleteIndex)
-                                        this.setState({
-                                            confirmDeleteOpen: false
-                                        })
-                                    }}
-                                    subtitle='Deleting this cannot be undone'
-                                />
+                            <Grid item xs={12}>
                                 {this.renderSliders()}
                             </Grid>
-                            <Grid item>
+                            <Grid item xs={12} sm={3}>
                                 <Button variant="contained" className={classes.fillWidth} onClick={this.handleStartStopOnClick}>
                                     {this.state.running ? 'Stop' : 'Start'}
                                 </Button>
                             </Grid>
+                            <Grid item xs={4} sm={3}>
+                                <Box flexDirection='column' flex={2} display='flex' alignItems='center'>
+                                    <Box display='flex'>
+                                        <Typography variant="subtitle1">{this.state.running ? "Running" : "On deck"}</Typography>
+                                    </Box>
+                                    <Box display='flex'>
+                                        <Typography variant='caption'>{this.currentCountdown.name}</Typography>
+                                    </Box>
+                                </Box>
+                            </Grid>
+                            <Grid item xs={4} sm={3}>
+                                <Box flexDirection='column' flex={2} display='flex' alignItems='center'>
+                                    <Box display='flex'>
+                                        <Typography variant="subtitle1">Time left</Typography>
+                                    </Box>
+                                    <Box display='flex'>
+                                        <Typography variant='caption'>{TimeFormat.seconds(this.state.secondsLeft)}</Typography>
+                                    </Box>
+                                </Box>
+                            </Grid>
+                            <Grid item xs={4} sm={3}>
+                                <Box flexDirection='column' flex={2} display='flex' alignItems='center'>
+                                    <Box display='flex'>
+                                        <Typography variant="subtitle1">Up next</Typography>
+                                    </Box>
+                                    <Box display='flex'>
+                                        <Typography variant='caption'>{this.getNextCountdown().name}</Typography>
+                                    </Box>
+                                </Box>
+                            </Grid>
                         </Grid>
                     </Paper> </Grid>
-                    <Grid item xs>
+                    <Grid item xs={12} sm={4} lg={6}>
                         <Paper className={classes.paperContainer}>
-                            <Typography variant="h5">{this.state.running ? "Running" : "On deck"}: {this.currentCountdown.name}</Typography>
-                            <Typography variant="h6">Time left {TimeFormat.seconds(this.state.secondsLeft)}</Typography>
-                            <Typography variant="caption">Up next: {this.getNextCountdown().name}</Typography>
+                            <Typography variant="h5">Test</Typography>
                         </Paper>
                     </Grid>
                 </Grid>
-            </div>
+            </div >
         );
     }
 });
