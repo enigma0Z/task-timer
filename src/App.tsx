@@ -334,7 +334,8 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
 
         this.setState({
             currentCountdownIndex: this.nextCountdownIndex,
-            warningNotificationSent: false
+            warningNotificationSent: false,
+            paused: false
         })
 
         localStorage.setItem('currentCountdownIndex', this.nextCountdownIndex.toString())
@@ -560,7 +561,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                                     <Button className={classes.fillWidth} onClick={this.handleStartStopOnClick}>
                                         {this.state.running ? <StopIcon /> : <PlayArrowIcon />}
                                     </Button>
-                                    <Button className={classes.fillWidth} onClick={() => {
+                                    <Button className={classes.fillWidth} disabled={!this.state.running} onClick={() => {
                                         if (this.state.running) {
                                             this.currentCountdown.pause()
                                             this.setState({

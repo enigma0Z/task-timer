@@ -104,6 +104,7 @@ export class Countdown extends Subscribable {
 
     stop() {
         this._running = false
+        this._paused = false
         this.update()
     }
 
