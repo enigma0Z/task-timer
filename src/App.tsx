@@ -502,7 +502,12 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                                 {this.renderSliders()}
                             </Grid>
                             <Grid item xs={12} sm={3}>
-                                <Button variant="contained" className={classes.fillWidth} onClick={this.handleStartStopOnClick}>
+                                <Button
+                                    variant="contained"
+                                    className={classes.fillWidth}
+                                    onClick={this.handleStartStopOnClick}
+                                    color={this.state.running ? 'secondary' : 'primary'}
+                                >
                                     {this.state.running ? 'Stop' : 'Start'}
                                 </Button>
                             </Grid>
