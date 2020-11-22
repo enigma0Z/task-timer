@@ -9,7 +9,8 @@ const SHORT_TIMER = false // For debug purposes
 export interface CountdownJsonObject {
     startTime?: any,
     endTime?: any,
-    running: any,
+    running: boolean,
+    paused: boolean
     secondsLeft: any,
     name: string,
     min: number,
@@ -25,6 +26,7 @@ export class Countdown extends Subscribable {
     private _endTime?: number = undefined;
 
     private _running: boolean = false
+    private _paused: boolean = false
     private _secondsLeft: number = 0;
 
     public constructor(
@@ -41,6 +43,7 @@ export class Countdown extends Subscribable {
         this.startTime = jsonObject.startTime
         this._endTime = jsonObject.endTime
         this._running = jsonObject.running
+        this._paused = jsonObject.paused
         this._secondsLeft = jsonObject.secondsLeft
         this._name = jsonObject.name
         this._min = jsonObject.min
@@ -56,6 +59,7 @@ export class Countdown extends Subscribable {
             startTime: this.startTime,
             endTime: this.endTime,
             running: this.running,
+            paused: this.paused,
             secondsLeft: this.secondsLeft,
             name: this.name,
             min: this.min,
@@ -71,6 +75,7 @@ export class Countdown extends Subscribable {
     public get secondsLeft(): number { return this._secondsLeft }
 
     public get running(): boolean { return this._running }
+    public get paused(): boolean { return this._paused }
 
     public get value(): number { return this._value ? this._value : DEFAULT_VALUE }
     public set value(value: number) { this._value = value }
@@ -102,8 +107,19 @@ export class Countdown extends Subscribable {
         this.update()
     }
 
+    pause() {
+        if (this.running) {
+            this._paused = !this._paused
+            if (!this.paused) {
+                this._endTime = Date.now() + (this._secondsLeft * 1000)
+            }
+
+            this.update()
+        }
+    }
+
     update() {
-        if (this.endTime !== undefined) {
+        if (this.endTime !== undefined && !this.paused) {
             this._secondsLeft = Math.floor((this.endTime - Date.now()) / 1000)
             if (this._running && this.secondsLeft > 0) {
                 this.timeout = setTimeout(() => this.update(), this.intervalMs)

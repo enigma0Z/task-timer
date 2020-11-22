@@ -11,7 +11,6 @@ export abstract class Subscribable {
 
     protected updateSubscribers() {
         this.subscribers.forEach((value, key, map) => {
-            console.log(`updating subscriber ${key}`)
             value()
         })
     }

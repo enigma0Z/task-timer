@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import {
     AppBar,
     Box,
+    ButtonGroup,
     Card,
     createStyles,
     Grid,
@@ -29,6 +30,10 @@ import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
 import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 import SettingsIcon from '@material-ui/icons/Settings';
 import AddIcon from '@material-ui/icons/Add';
+import PauseIcon from '@material-ui/icons/Pause';
+import PlayArrowIcon from '@material-ui/icons/PlayArrow';
+import StopIcon from '@material-ui/icons/Stop';
+import PlayCircleOutlineIcon from '@material-ui/icons/PlayCircleOutline';
 
 import 'date-fns';
 import DateFnsUtils from '@date-io/date-fns';
@@ -99,6 +104,7 @@ interface AppState {
     workLength: number,
     breakLength: number,
     running: boolean,
+    paused: boolean,
     secondsLeft: number,
     currentCountdownIndex: number,
     countdowns: Countdown[],
@@ -140,12 +146,14 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
 
         let secondsLeft = 0
         let running = false
+        let paused = false
         const runningCountdown: Countdown = countdowns.filter((countdown: Countdown) => { return countdown.running })[0]
 
         if (runningCountdown) {
             runningCountdown.update()
             secondsLeft = runningCountdown.secondsLeft
             running = true
+            paused = runningCountdown.paused
         }
 
         const selectedDate = localStorage.getItem('selectedDate')
@@ -154,6 +162,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
             workLength: 50,
             breakLength: 10,
             running: running,
+            paused: paused,
             secondsLeft: secondsLeft,
             sidebarOpen: false,
             notificationSupport: "Notification" in window,
@@ -312,6 +321,10 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
     startTimer() {
         this.currentCountdown.subscribe(this.constructor.name, this.updateSubscriber)
         this.currentCountdown.start()
+    }
+
+    pauseTimer() {
+
     }
 
     stopTimer() {
@@ -535,19 +548,38 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                                 {this.renderSliders()}
                             </Grid>
                             <Grid item xs={12} sm={3}>
-                                <Button
-                                    variant="contained"
+                                <ButtonGroup
                                     className={classes.fillWidth}
-                                    onClick={this.handleStartStopOnClick}
-                                    color={this.state.running ? 'secondary' : 'primary'}
+                                    variant="contained"
+                                    color={
+                                        this.state.running
+                                            ? this.state.paused ? 'default' : 'secondary'
+                                            : 'primary'
+                                    }
                                 >
-                                    {this.state.running ? 'Stop' : 'Start'}
-                                </Button>
+                                    <Button className={classes.fillWidth} onClick={this.handleStartStopOnClick}>
+                                        {this.state.running ? <StopIcon /> : <PlayArrowIcon />}
+                                    </Button>
+                                    <Button className={classes.fillWidth} onClick={() => {
+                                        if (this.state.running) {
+                                            this.currentCountdown.pause()
+                                            this.setState({
+                                                paused: !this.state.paused
+                                            })
+                                        }
+                                    }}>
+                                        {this.state.paused ? <PlayCircleOutlineIcon /> : <PauseIcon />}
+                                    </Button>
+                                </ButtonGroup>
                             </Grid>
                             <Grid item xs={4} sm={3}>
                                 <Box flexDirection='column' flex={2} display='flex' alignItems='center'>
                                     <Box display='flex'>
-                                        <Typography variant="subtitle1">{this.state.running ? "Running" : "On deck"}</Typography>
+                                        <Typography variant="subtitle1">{
+                                            this.state.running
+                                                ? this.state.paused ? 'Paused' : "Running"
+                                                : "On deck"
+                                        }</Typography>
                                     </Box>
                                     <Box display='flex'>
                                         <Typography variant='caption'>{this.currentCountdown.name}</Typography>
