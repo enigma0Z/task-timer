@@ -119,15 +119,35 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
     constructor(props: AppProps) {
         super(props)
 
+        const currentCountdownIndex = localStorage.getItem('currentCountdownIndex')
+        const countdownsStr = localStorage.getItem('countdowns')
+        let countdowns = DEFAULT_COUNTDOWNS
+
+        if (countdownsStr !== null) {
+            countdowns = JSON.parse(countdownsStr).map((countdownJsonObject: CountdownJsonObject) => {
+                return new Countdown().loadFromJsonObject(countdownJsonObject)
+            })
+        }
+
+        let secondsLeft = 0
+        let running = false
+        const runningCountdown: Countdown = countdowns.filter((countdown: Countdown) => { return countdown.running })[0]
+
+        if (runningCountdown) {
+            runningCountdown.update()
+            secondsLeft = runningCountdown.secondsLeft
+            running = true
+        }
+
         this.state = {
             workLength: 50,
             breakLength: 10,
-            running: false,
-            secondsLeft: 0,
+            running: running,
+            secondsLeft: secondsLeft,
             sidebarOpen: false,
             notificationSupport: "Notification" in window,
-            countdowns: DEFAULT_COUNTDOWNS,
-            currentCountdownIndex: 0,
+            countdowns: countdowns,
+            currentCountdownIndex: currentCountdownIndex ? parseInt(currentCountdownIndex) : 0,
             editingOrder: false,
             confirmDeleteOpen: false,
             confirmDeleteIndex: 0,
@@ -145,34 +165,9 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
 
     componentDidMount() {
         notificationService.requestDesktopNotificationPermissions()
-
-        // Load from state
-        const currentCountdownIndex = localStorage.getItem('currentCountdownIndex')
-        const countdownsStr = localStorage.getItem('countdowns')
-
-        if (countdownsStr !== null) {
-            const countdowns = JSON.parse(countdownsStr).map((countdownJsonObject: CountdownJsonObject) => {
-                return new Countdown().loadFromJsonObject(countdownJsonObject)
-            })
-
-            if (countdowns.length > 0) {
-                this.setState({
-                    countdowns: countdowns,
-                })
-
-                const runningCountdown: Countdown = countdowns.filter((countdown: Countdown) => { return countdown.running })[0]
-
-                if (runningCountdown) {
-                    runningCountdown.update()
-                    runningCountdown.subscribe(this.constructor.name, this.updateSubscriber)
-                    this.updateCountdownState(runningCountdown)
-                }
-            }
+        if (this.state.running) {
+            this.currentCountdown.subscribe(this.constructor.name, this.updateSubscriber)
         }
-
-        this.setState({
-            currentCountdownIndex: currentCountdownIndex ? parseInt(currentCountdownIndex) : this.state.currentCountdownIndex
-        })
     }
 
     get currentCountdown(): Countdown {
@@ -362,6 +357,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                     </Grid>
                 )
             } else {
+                console.log(countdown.name, countdown.value)
                 elements.push(
                     <Grid item key={countdown.name}>
                         <LabelSlider
@@ -373,6 +369,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                             max={countdown.max}
                             onChange={(value: number, thisCountdown: Countdown = countdown) => {
                                 thisCountdown.value = value
+                                console.log('value', value, this.state.countdowns, thisCountdown)
                                 this.saveCountdownsToLocalStorage()
                             }}
                             onEditSave={(name: string, min: number, max: number) => {
