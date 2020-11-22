@@ -501,7 +501,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                     subtitle='Deleting this cannot be undone'
                 />
                 <Grid container className={classes.gridContainer} spacing={2}>
-                    <Grid item xs={12} md={8} lg={6}> <Paper className={classes.paperContainer}>
+                    <Grid item xs={12} md={8}> <Paper className={classes.paperContainer}>
                         <Grid container>
                             <Grid item xs={12}>
                                 <Box display='flex' flexDirection="row">
@@ -608,7 +608,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                             </Grid>
                         </Grid>
                     </Paper> </Grid>
-                    <Grid item xs={12} md={4} lg={6}> <Paper className={classes.paperContainer}>
+                    <Grid item xs={12} md={4}> <Paper className={classes.paperContainer}>
                         <Grid container>
                             <Grid item xs={12}>
                                 <Typography variant="h3">Schedule</Typography>
