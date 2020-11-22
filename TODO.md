@@ -10,6 +10,7 @@
 * [x] Global reset button?
 * [x] Fix subcomponents using callbacks for open state prop
 * [x] Refactor cancel modal component into its own thing
+* [X] Warning notification (5m remaining)
 
 ## Now
 
@@ -19,10 +20,11 @@
 * [ ] Fix editing not saving min max
 * [ ] Global save button?
 * [ ] Better readme
+* [ ] Add "You haven't started the next thing" reminder
 
 ## Next
 
-* [ ] Warning notification (5m remaining etc)
+* [ ] Configurable warning notification
 * [ ] Progress widget to show visually how much of the countdown is left
 * [ ] Better theme
 
