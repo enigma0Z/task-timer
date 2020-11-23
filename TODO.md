@@ -29,6 +29,9 @@
 * [ ] Configurable warning notification
 * [ ] Progress widget to show visually how much of the countdown is left
 * [ ] Better theme (as in make a theme)
+* [ ] Add about info somewhere
+  * Current version
+  * Link to github
 
 ## Near
 
