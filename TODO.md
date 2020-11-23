@@ -17,11 +17,10 @@
 
 ## Now
 
-* [ ] Better favicon
+* [ ] Better favicon (as in actually make one)
 * [ ] History view
 * [ ] Timer complete modal
 * [ ] Add out-of-band timers (such as a meeting)
-* [ ] Better readme
 * [ ] Add "You haven't started the next thing" reminder
 
 ## Next
@@ -29,14 +28,16 @@
 * [ ] Configurable schedule
 * [ ] Configurable warning notification
 * [ ] Progress widget to show visually how much of the countdown is left
-* [ ] Better theme
-* [ ] Better unit tests
+* [ ] Better theme (as in make a theme)
 
 ## Near
 
 * [ ] IOS / Android app
+* [ ] Actually write unit tests
 
 ## Won't do
 
 * Global save button?
   * This is more just a crutch for not saving state to local storage nicely
+* Better readme
+  * This is too obscure to actually do
