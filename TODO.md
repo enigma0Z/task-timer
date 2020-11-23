@@ -8,18 +8,19 @@
   * [x] Use local storage
 * [x] Add / Delete countdowns
 * [x] Global reset button?
-* [x] Fix subcomponents using callbacks for open state prop
+* [x] Fix sub components using callbacks for open state prop
 * [x] Refactor cancel modal component into its own thing
 * [X] Warning notification (5m remaining)
 * [X] Add scheduled checks feature (e.g. lunchtime)
 * [X] Pause feature
+* [X] Fix editing not saving min max
 
 ## Now
 
+* [ ] Better favicon
 * [ ] History view
 * [ ] Timer complete modal
 * [ ] Add out-of-band timers (such as a meeting)
-* [ ] Fix editing not saving min max
 * [ ] Better readme
 * [ ] Add "You haven't started the next thing" reminder
 
@@ -37,4 +38,5 @@
 
 ## Won't do
 
-* [ ] Global save button?
+* Global save button?
+  * This is more just a crutch for not saving state to local storage nicely
