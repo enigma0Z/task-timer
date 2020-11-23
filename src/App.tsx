@@ -626,7 +626,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                                             })
                                             localStorage.setItem('selectedDate', JSON.stringify(date))
                                         }}
-                                        minutesStep={1}
+                                        minutesStep={5}
                                     />
                                 </MuiPickersUtilsProvider>
                             </Grid>
