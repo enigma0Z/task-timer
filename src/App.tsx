@@ -121,6 +121,7 @@ interface AppState {
 }
 
 const APP_TITLE: string = 'Task Timer'
+const APP_TITLE_SHORT: string = 'TT'
 const DEFAULT_COUNTDOWNS: Countdown[] = [
     new Countdown('Work', 1, 90, 50),
     new Countdown('Break time', 1, 15, 10),
@@ -174,7 +175,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
             confirmDeleteName: '',
             confirmResetOpen: false,
             warningNotificationSent: false,
-            selectedDate: selectedDate ? new Date(JSON.parse(selectedDate)) : new Date(0, 0, 0, 12)
+            selectedDate: selectedDate ? new Date(JSON.parse(selectedDate)) : new Date(0, 0, 0, 12, 0, 10)
         }
 
         this.handleStartStopOnClick = this.handleStartStopOnClick.bind(this)
@@ -193,6 +194,14 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
         }
 
         this.checkSchedule()
+
+        let utils = new DateFnsUtils()
+        console.log(this.state.selectedDate)
+        console.log(utils.format(this.state.selectedDate, 'H:m:s'))
+    }
+
+    componentWillUnmount() {
+        this.currentCountdown.unsubscribe(this.constructor.name)
     }
 
     get currentCountdown(): Countdown {
@@ -290,6 +299,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
 
     updateSubscriber() {
         if (this.currentCountdown.running) {
+            window.document.title = `${APP_TITLE_SHORT} [${this.currentCountdown.name} ${TimeFormat.seconds(this.currentCountdown.secondsLeft)}]`
             this.updateCountdownState(this.currentCountdown)
             if (
                 !this.state.warningNotificationSent
@@ -321,6 +331,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
     startTimer() {
         this.currentCountdown.subscribe(this.constructor.name, this.updateSubscriber)
         this.currentCountdown.start()
+        window.document.title = `${APP_TITLE_SHORT} [${this.currentCountdown.name} ${TimeFormat.seconds(this.currentCountdown.secondsLeft)}]`
     }
 
     pauseTimer() {
@@ -338,6 +349,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
             paused: false
         })
 
+        window.document.title = APP_TITLE
         localStorage.setItem('currentCountdownIndex', this.nextCountdownIndex.toString())
     }
 
@@ -482,7 +494,8 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                             countdowns: DEFAULT_COUNTDOWNS
                         })
 
-                        this.saveCountdownsToLocalStorage(DEFAULT_COUNTDOWNS)
+                        localStorage.clear()
+                        window.location.reload()
                     }}
                     subtitle='Resetting your countdowns cannot be undone'
                 />
@@ -576,34 +589,34 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                             <Grid item xs={4} sm={3}>
                                 <Box flexDirection='column' flex={2} display='flex' alignItems='center'>
                                     <Box display='flex'>
-                                        <Typography variant="subtitle1">{
+                                        <Typography variant="caption">{
                                             this.state.running
                                                 ? this.state.paused ? 'Paused' : "Running"
                                                 : "On deck"
                                         }</Typography>
                                     </Box>
                                     <Box display='flex'>
-                                        <Typography variant='caption'>{this.currentCountdown.name}</Typography>
+                                        <Typography variant='subtitle1'>{this.currentCountdown.name}</Typography>
                                     </Box>
                                 </Box>
                             </Grid>
                             <Grid item xs={4} sm={3}>
                                 <Box flexDirection='column' flex={2} display='flex' alignItems='center'>
                                     <Box display='flex'>
-                                        <Typography variant="subtitle1">Time left</Typography>
+                                        <Typography variant="caption">Time left</Typography>
                                     </Box>
                                     <Box display='flex'>
-                                        <Typography variant='caption'>{TimeFormat.seconds(this.state.secondsLeft)}</Typography>
+                                        <Typography variant='subtitle1'>{TimeFormat.seconds(this.state.secondsLeft)}</Typography>
                                     </Box>
                                 </Box>
                             </Grid>
                             <Grid item xs={4} sm={3}>
                                 <Box flexDirection='column' flex={2} display='flex' alignItems='center'>
                                     <Box display='flex'>
-                                        <Typography variant="subtitle1">Up next</Typography>
+                                        <Typography variant="caption">Up next</Typography>
                                     </Box>
                                     <Box display='flex'>
-                                        <Typography variant='caption'>{this.getNextCountdown().name}</Typography>
+                                        <Typography variant='subtitle1'>{this.getNextCountdown().name}</Typography>
                                     </Box>
                                 </Box>
                             </Grid>
