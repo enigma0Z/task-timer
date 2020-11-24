@@ -14,6 +14,7 @@
 * [X] Add scheduled checks feature (e.g. lunchtime)
 * [X] Pause feature
 * [X] Fix editing not saving min max
+* [x] Current time in title
 
 ## Now
 

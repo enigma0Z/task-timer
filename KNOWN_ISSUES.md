@@ -3,7 +3,9 @@
 * [ ] Some scenarios will cause a bunch of notifications to be sent all at once
   * I suspect this is related to the subscriber being updated that the countdown
     is complete but not being unsubscribed
-* [ ] Notifications broke on Firefox for some reason
+* [ ] Time format for Firefox is -1 minute
+  * The actual data is still correct (that is, 11:59 AM internally is still
+    12:00 PM, for instance), so it's at least ignorable: visual bug only.
 
 ## Fixed
 
@@ -14,3 +16,5 @@
 * [X] Deleting the current ticountdown will cause a crash
 * [X] Timers not rolling over when completed (e.g. work completes, break is not
   queued up to be on deck)
+* [X] Notifications broke on Firefox for some reason
+  * This is due to a bad configuration on my computer
