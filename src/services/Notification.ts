@@ -1,4 +1,4 @@
-import { Subscribable } from '../../data/Subscribable'
+import { Subscribable } from '../data/Subscribable'
 
 export class NotificationService extends Subscribable {
     private static _instance: NotificationService;
