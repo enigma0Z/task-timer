@@ -19,7 +19,7 @@ import Button from '@material-ui/core/Button/Button';
 import { LabelSlider } from './components/LabelSlider';
 import { Sidebar } from './components/Sidebar';
 import { ConfirmationModal } from './components/ConfirmationModal';
-import { Countdown, CountdownJsonObject } from './data/Countdown'
+import { Countdown, CountdownObject } from './data/Countdown'
 import { TimeFormat } from './data/format/Time'
 
 import { NotificationService } from './services/Notification'
@@ -126,8 +126,8 @@ interface AppState {
 const APP_TITLE: string = 'Task Timer'
 const APP_TITLE_SHORT: string = 'TT'
 const DEFAULT_COUNTDOWNS: Countdown[] = [
-    new Countdown('Work', 1, 90, 50),
-    new Countdown('Break time', 1, 15, 10),
+    new Countdown({ name: 'Work', min: 1, max: 90, value: 50 }),
+    new Countdown({ name: 'Break time', min: 1, max: 15, value: 10 }),
 ]
 
 const notificationService: NotificationService = NotificationService.instance
@@ -143,8 +143,8 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
         let countdowns = DEFAULT_COUNTDOWNS
 
         if (countdownsStr !== null) {
-            countdowns = JSON.parse(countdownsStr).map((countdownJsonObject: CountdownJsonObject) => {
-                return new Countdown().loadFromJsonObject(countdownJsonObject)
+            countdowns = JSON.parse(countdownsStr).map((countdownObject: CountdownObject) => {
+                return new Countdown(countdownObject)
             })
         }
 
@@ -290,9 +290,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
     saveCountdownsToLocalStorage(countdowns: Countdown[] = this.state.countdowns) {
         localStorage.setItem(
             'countdowns',
-            JSON.stringify(
-                countdowns.map((countdown) => countdown.exportToJsonObject())
-            )
+            JSON.stringify(countdowns)
         )
     }
 
@@ -540,7 +538,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                                         onClick={() => {
                                             let newCountdowns = [
                                                 ...this.state.countdowns,
-                                                new Countdown(`NEW ${this.state.countdowns.length}`)
+                                                new Countdown({ name: `NEW ${this.state.countdowns.length}` })
                                             ]
 
                                             this.saveCountdownsToLocalStorage(newCountdowns)
