@@ -19,7 +19,7 @@ export class HistoryItem {
         this.end = end
     }
 
-    public get duration(): number {
+    public get durationMs(): number {
         return this.end - this.start
     }
 }
@@ -37,6 +37,18 @@ export class HistoryItemCollection {
                 this.addItem(item)
             }
         }
+    }
+
+    get today(): HistoryItem[] {
+        let now = new Date(Date.now())
+        return this.items.filter((item) => {
+            let start = new Date(item.start)
+            return (
+                start.getFullYear() === now.getFullYear() &&
+                start.getMonth() === now.getMonth() &&
+                start.getDay() === now.getDay()
+            )
+        })
     }
 
     public addItem(item: HistoryItemObject) {

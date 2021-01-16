@@ -11,7 +11,12 @@ export class HistoryService extends Subscribable {
 
     private constructor() {
         super()
-        this.history = new HistoryItemCollection(JSON.parse(localStorage.getItem('history')))
+        let history: string | null = localStorage.getItem('history')
+        if (history) {
+            this.history = new HistoryItemCollection(JSON.parse(history))
+        } else {
+            this.history = new HistoryItemCollection()
+        }
     }
 
     public get items() {
@@ -20,6 +25,7 @@ export class HistoryService extends Subscribable {
 
     public addItem(item: HistoryItemObject) {
         this.history.addItem(item)
+        localStorage.setItem('history', JSON.stringify(this.history))
         this.updateSubscribers()
     }
 }
