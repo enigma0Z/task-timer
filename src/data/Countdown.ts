@@ -6,6 +6,7 @@ const DEFAULT_MAX = 90
 const DEFAULT_INTERVAL_MS = 1000
 
 const SHORT_TIMER = false // For debug purposes
+
 export interface CountdownJsonObject {
     startTime?: any,
     endTime?: any,
