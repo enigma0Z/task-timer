@@ -22,7 +22,7 @@ import { ConfirmationModal } from './components/ConfirmationModal';
 import { Countdown, CountdownJsonObject } from './data/Countdown'
 import { TimeFormat } from './data/format/Time'
 
-import { NotificationService } from './services/notification'
+import { NotificationService } from './services/Notification'
 
 import MenuIcon from '@material-ui/icons/Menu';
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
