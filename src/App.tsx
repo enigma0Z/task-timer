@@ -41,6 +41,9 @@ import {
     MuiPickersUtilsProvider,
     KeyboardTimePicker,
 } from '@material-ui/pickers';
+import { HistoryList } from './components/History';
+import { HistoryService } from './services/History';
+import { TwoText } from './components/elements/TwoText';
 
 const styles = (theme: Theme) => createStyles({
     root: {
@@ -194,10 +197,6 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
         }
 
         this.checkSchedule()
-
-        let utils = new DateFnsUtils()
-        console.log(this.state.selectedDate)
-        console.log(utils.format(this.state.selectedDate, 'H:m:s'))
     }
 
     componentWillUnmount() {
@@ -342,6 +341,20 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
         this.currentCountdown.unsubscribe(this.constructor.name)
         this.currentCountdown.stop()
         this.updateCountdownState(this.currentCountdown)
+
+        if (this.currentCountdown.startTime && this.currentCountdown.endTime) {
+            let endTime: number = Date.now()
+
+            if (endTime > this.currentCountdown.endTime) {
+                endTime = this.currentCountdown.endTime
+            }
+
+            HistoryService.instance.addItem({
+                name: this.currentCountdown.name,
+                start: this.currentCountdown.startTime,
+                end: endTime
+            })
+        }
 
         this.setState({
             currentCountdownIndex: this.nextCountdownIndex,
@@ -514,114 +527,94 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                     }}
                     subtitle='Deleting this cannot be undone'
                 />
-                <Grid container className={classes.gridContainer} spacing={2}>
-                    <Grid item xs={12} md={8}> <Paper className={classes.paperContainer}>
-                        <Grid container>
-                            <Grid item xs={12}>
-                                <Box display='flex' flexDirection="row">
-                                    <Box flex='100%'>
-                                        <Typography variant="h3"> Timers </Typography>
-                                    </Box>
-                                    <Box flex={1}>
-                                        <IconButton
-                                            disabled={this.state.editingOrder}
-                                            onClick={() => {
-                                                let newCountdowns = [
-                                                    ...this.state.countdowns,
-                                                    new Countdown(`NEW ${this.state.countdowns.length}`)
-                                                ]
-
-                                                this.saveCountdownsToLocalStorage(newCountdowns)
-
-                                                this.setState({
-                                                    countdowns: newCountdowns
-                                                })
-                                            }}
-                                        >
-                                            <AddIcon color={this.state.editingOrder ? 'disabled' : 'primary'} />
-                                        </IconButton>
-                                    </Box>
-                                    <Box flex={1}>
-                                        <IconButton
-                                            onClick={() => {
-                                                if (this.state.editingOrder) { // if we are leaving edit mode
-                                                    this.saveCountdownsToLocalStorage()
-                                                }
-
-                                                this.setState({
-                                                    editingOrder: !this.state.editingOrder
-                                                })
-                                            }}
-                                        >
-                                            <SettingsIcon color={this.state.editingOrder ? 'primary' : 'action'} />
-                                        </IconButton>
-                                    </Box>
+                <Grid container className={classes.gridContainer} spacing={2}> <Grid item xs={12} md={8}> <Paper className={classes.paperContainer}>
+                    <Grid container>
+                        <Grid item xs={12}>
+                            <Box display='flex' flexDirection="row">
+                                <Box flex='100%'>
+                                    <Typography variant="h3"> Timers </Typography>
                                 </Box>
-                            </Grid>
-                            <Grid item xs={12}>
-                                {this.renderSliders()}
-                            </Grid>
-                            <Grid item xs={12} sm={3}>
-                                <ButtonGroup
-                                    className={classes.fillWidth}
-                                    variant="contained"
-                                    color={
-                                        this.state.running
-                                            ? this.state.paused ? 'default' : 'secondary'
-                                            : 'primary'
-                                    }
-                                >
-                                    <Button className={classes.fillWidth} onClick={this.handleStartStopOnClick}>
-                                        {this.state.running ? <StopIcon /> : <PlayArrowIcon />}
-                                    </Button>
-                                    <Button className={classes.fillWidth} disabled={!this.state.running} onClick={() => {
-                                        if (this.state.running) {
-                                            this.currentCountdown.pause()
+                                <Box flex={1}>
+                                    <IconButton
+                                        disabled={this.state.editingOrder}
+                                        onClick={() => {
+                                            let newCountdowns = [
+                                                ...this.state.countdowns,
+                                                new Countdown(`NEW ${this.state.countdowns.length}`)
+                                            ]
+
+                                            this.saveCountdownsToLocalStorage(newCountdowns)
+
                                             this.setState({
-                                                paused: !this.state.paused
+                                                countdowns: newCountdowns
                                             })
-                                        }
-                                    }}>
-                                        {this.state.paused ? <PlayCircleOutlineIcon /> : <PauseIcon />}
-                                    </Button>
-                                </ButtonGroup>
-                            </Grid>
-                            <Grid item xs={4} sm={3}>
-                                <Box flexDirection='column' flex={2} display='flex' alignItems='center'>
-                                    <Box display='flex'>
-                                        <Typography variant="caption">{
-                                            this.state.running
-                                                ? this.state.paused ? 'Paused' : "Running"
-                                                : "On deck"
-                                        }</Typography>
-                                    </Box>
-                                    <Box display='flex'>
-                                        <Typography variant='subtitle1'>{this.currentCountdown.name}</Typography>
-                                    </Box>
+                                        }}
+                                    >
+                                        <AddIcon color={this.state.editingOrder ? 'disabled' : 'primary'} />
+                                    </IconButton>
                                 </Box>
-                            </Grid>
-                            <Grid item xs={4} sm={3}>
-                                <Box flexDirection='column' flex={2} display='flex' alignItems='center'>
-                                    <Box display='flex'>
-                                        <Typography variant="caption">Time left</Typography>
-                                    </Box>
-                                    <Box display='flex'>
-                                        <Typography variant='subtitle1'>{TimeFormat.seconds(this.state.secondsLeft)}</Typography>
-                                    </Box>
+                                <Box flex={1}>
+                                    <IconButton
+                                        onClick={() => {
+                                            if (this.state.editingOrder) { // if we are leaving edit mode
+                                                this.saveCountdownsToLocalStorage()
+                                            }
+
+                                            this.setState({
+                                                editingOrder: !this.state.editingOrder
+                                            })
+                                        }}
+                                    >
+                                        <SettingsIcon color={this.state.editingOrder ? 'primary' : 'action'} />
+                                    </IconButton>
                                 </Box>
-                            </Grid>
-                            <Grid item xs={4} sm={3}>
-                                <Box flexDirection='column' flex={2} display='flex' alignItems='center'>
-                                    <Box display='flex'>
-                                        <Typography variant="caption">Up next</Typography>
-                                    </Box>
-                                    <Box display='flex'>
-                                        <Typography variant='subtitle1'>{this.getNextCountdown().name}</Typography>
-                                    </Box>
-                                </Box>
-                            </Grid>
+                            </Box>
                         </Grid>
-                    </Paper> </Grid>
+                        <Grid item xs={12}>
+                            {this.renderSliders()}
+                        </Grid>
+                        <Grid item xs={12} sm={3}>
+                            <ButtonGroup
+                                className={classes.fillWidth}
+                                variant="contained"
+                                color={
+                                    this.state.running
+                                        ? this.state.paused ? 'default' : 'secondary'
+                                        : 'primary'
+                                }
+                            >
+                                <Button className={classes.fillWidth} onClick={this.handleStartStopOnClick}>
+                                    {this.state.running ? <StopIcon /> : <PlayArrowIcon />}
+                                </Button>
+                                <Button className={classes.fillWidth} disabled={!this.state.running} onClick={() => {
+                                    if (this.state.running) {
+                                        this.currentCountdown.pause()
+                                        this.setState({
+                                            paused: !this.state.paused
+                                        })
+                                    }
+                                }}>
+                                    {this.state.paused ? <PlayCircleOutlineIcon /> : <PauseIcon />}
+                                </Button>
+                            </ButtonGroup>
+                        </Grid>
+                        <Grid item xs={4} sm={3}>
+                            <TwoText
+                                caption={this.state.running ? this.state.paused ? 'Paused' : "Running" : "On deck"}
+                                text={this.currentCountdown.name}
+                            />
+                        </Grid>
+                        <Grid item xs={4} sm={3}>
+                            <TwoText
+                                caption="Time left"
+                                text={TimeFormat.seconds(this.state.secondsLeft)}
+                            />
+                        </Grid>
+                        <Grid item xs={4} sm={3}>
+                            <TwoText caption="Up next" text={this.getNextCountdown().name} />
+                        </Grid>
+                    </Grid>
+                </Paper> </Grid>
                     <Grid item xs={12} md={4}> <Paper className={classes.paperContainer}>
                         <Grid container>
                             <Grid item xs={12}>
@@ -642,6 +635,16 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                                         minutesStep={5}
                                     />
                                 </MuiPickersUtilsProvider>
+                            </Grid>
+                        </Grid>
+                    </Paper> </Grid>
+                    <Grid item xs={12} md={4}> <Paper className={classes.paperContainer}>
+                        <Grid container>
+                            <Grid item xs={12}>
+                                <Typography variant="h3">History</Typography>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <HistoryList />
                             </Grid>
                         </Grid>
                     </Paper> </Grid>
