@@ -6,25 +6,16 @@ import { Component } from "react"
 const styles = (theme: Theme) => createStyles({
     container: { width: '100%', height: '100%' },
 });
-
-interface IFlexGridRow {
-    left: object | number,
-    center?: object | number,
-    right?: object | number
-}
-
-class FlexGridRow implements IFlexGridRow {
-    public row: IFlexGridRow
-
-    constructor(row: IFlexGridRow) {
-        this.row = row
-    }
-
-    public get left(): object | number { return this.row.left }
-    public get center(): object | number { return this.row.center ? this.row.center : this.row.left }
-    public get right(): object | number { return this.row.right ? this.row.right : this.row.left }
-}
-
+/**
+ * Data values for flex box spacing of {@link FlexModal}
+ * 
+ * @param top Spacing for the top of the modal
+ * @param left Spacing left of the modal
+ * @param bottom Spacing below the modal
+ * @param right Spacing right of the modal
+ * @param middle Vertical space allocated for the modal
+ * @param center Horizontal space allocated for the modal
+ */
 interface IFlexGrid {
     top?: number | object
     left?: number | object

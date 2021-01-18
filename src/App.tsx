@@ -2,14 +2,11 @@ import React, { Component } from 'react';
 
 import {
     AppBar,
-    Backdrop,
     Button,
     Card,
     createStyles,
-    Fade,
     Grid,
     IconButton,
-    Modal,
     Paper,
     Theme,
     Toolbar,
