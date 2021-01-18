@@ -265,7 +265,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                             </Grid>
                         </Paper>
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={8}>
                         <Paper className={classes.paperContainer}>
                             <Grid container>
                                 <Grid item xs={12}>

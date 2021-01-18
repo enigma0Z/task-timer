@@ -22,7 +22,7 @@ import { TwoText } from "../widgets/TwoText";
 
 const styles = (theme: Theme) => createStyles({
     table: {
-        minWidth: 650,
+        minWidth: 400,
     },
     totalsGrid: { flexGrow: 1, padding: 8 },
 });
