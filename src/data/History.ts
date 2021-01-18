@@ -1,3 +1,6 @@
+import { Collection } from "../interfaces/Collection"
+import { Subscribable } from "./Subscribable"
+
 export interface HistoryItemObject {
     name: string,
     start: number,
@@ -24,18 +27,21 @@ export class HistoryItem {
     }
 }
 
-export interface HistoryItemCollectionObject {
-    items?: HistoryItemObject[]
-}
-
-export class HistoryItemCollection {
+export class HistoryItemCollection extends Subscribable implements Collection<HistoryItem> {
     readonly items: HistoryItem[] = []
 
-    constructor(collection?: HistoryItemCollectionObject) {
+    constructor(collection?: Collection<HistoryItemObject>) {
+        super()
         if (collection?.items) {
             for (let item of collection.items) {
                 this.addItem(item)
             }
+        }
+    }
+
+    public toJSON(): Collection<HistoryItemObject> {
+        return {
+            items: this.items
         }
     }
 
@@ -53,5 +59,6 @@ export class HistoryItemCollection {
 
     public addItem(item: HistoryItemObject) {
         this.items.push(new HistoryItem(item))
+        this.updateSubscribers()
     }
 }
