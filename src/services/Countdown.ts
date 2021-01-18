@@ -48,7 +48,6 @@ export class CountdownService extends Subscribable {
             this.save()
         })
 
-        console.log('CountdownService.load() saving', this.countdowns)
         this.save()
     }
 

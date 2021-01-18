@@ -67,8 +67,6 @@ export const CountdownComponent = withStyles(styles)(class CountdownInternal ext
     ) {
         super(props)
 
-        console.log(CountdownService.instance.countdowns)
-
         this.state = {
             countdowns: CountdownService.instance.countdowns,
             editingOrder: false,
