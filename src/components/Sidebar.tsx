@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 
 import {
+    Box,
+    Button,
     createStyles,
     Divider,
     Drawer,
@@ -11,6 +13,7 @@ import {
     ListItemText,
     Switch,
     Theme,
+    Typography,
     WithStyles, withStyles
 } from '@material-ui/core';
 import NotificationsIcon from '@material-ui/icons/Notifications';
@@ -18,10 +21,20 @@ import { NotificationService } from '../services/Notification';
 import { ConfirmationModal } from './ConfirmationModal';
 import { CountdownService } from '../services/Countdown';
 import { HistoryService } from '../services/History';
+import { AutorenewTwoTone } from '@material-ui/icons';
 
 const styles = (theme: Theme) => createStyles({
     sideBar: {
         width: 250
+    },
+    footer: {
+        top: 'auto',
+        bottom: 0,
+        width: '100%',
+        padding: 8,
+    },
+    footerButton: {
+        width: '100%'
     }
 })
 
@@ -153,8 +166,14 @@ export const Sidebar = withStyles(styles)(class SidebarComponent extends Compone
                         </ListItem>
                     </List>
                 </div>
+                <Box position='fixed' className={classes.footer}>
+                    <Button>
+                        <Typography variant='caption'>
+                            Version {process.env.REACT_APP_VERSION} (what's new)
+                        </Typography>
+                    </Button>
+                </Box>
             </Drawer>
         )
     }
-
 });
