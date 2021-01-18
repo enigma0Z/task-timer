@@ -21,7 +21,6 @@ import { NotificationService } from '../services/Notification';
 import { ConfirmationModal } from './ConfirmationModal';
 import { CountdownService } from '../services/Countdown';
 import { HistoryService } from '../services/History';
-import { AutorenewTwoTone } from '@material-ui/icons';
 
 const styles = (theme: Theme) => createStyles({
     sideBar: {
