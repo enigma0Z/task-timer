@@ -3,29 +3,35 @@ import { Subscribable } from '../data/Subscribable'
 
 export class HistoryService extends Subscribable {
     private static _instance: HistoryService;
-    readonly history: HistoryItemCollection;
+    public static get instance(): HistoryService { return this._instance || (this._instance = new this()) }
 
-    public static get instance(): HistoryService {
-        return this._instance || (this._instance = new this())
-    }
+    private _history: HistoryItemCollection;
+
+    public get history(): HistoryItemCollection { return this._history }
+    public get items() { return this.history.items }
 
     private constructor() {
         super()
         let history: string | null = localStorage.getItem('history')
         if (history) {
-            this.history = new HistoryItemCollection(JSON.parse(history))
+            this._history = new HistoryItemCollection(JSON.parse(history))
         } else {
-            this.history = new HistoryItemCollection()
+            this._history = new HistoryItemCollection()
         }
     }
 
-    public get items() {
-        return this.history.items
+    public save(): void {
+        localStorage.setItem('history', JSON.stringify(this.history))
+        this.updateSubscribers()
     }
 
     public addItem(item: HistoryItemObject) {
-        this.history.addItem(item)
-        localStorage.setItem('history', JSON.stringify(this.history))
-        this.updateSubscribers()
+        this._history.addItem(item)
+        this.save()
+    }
+
+    public clear(): void {
+        this._history = new HistoryItemCollection()
+        this.save()
     }
 }
