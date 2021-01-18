@@ -6,6 +6,8 @@
 * [ ] Returning to a page when an active timer was left running but has expired
   since you left will leave the timer in an inconsistent state: 0s left but
   still "running"
+* [ ] Some times (some scenarios) will cause the timer to not start actively
+  counting down on the page
 
 ## Fixed
 
