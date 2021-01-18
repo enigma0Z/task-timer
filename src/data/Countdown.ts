@@ -182,7 +182,7 @@ export class CountdownCollection extends Subscribable implements CountdownCollec
     public addItem(countdownObject: CountdownObject): void {
         if (countdownObject !== null) {
             let countdown: Countdown = new Countdown(countdownObject)
-            countdown.subscribe(this.constructor.name, () => {
+            countdown.subscribe('CountdownCollection', () => {
                 this.updateSubscribers()
             })
 

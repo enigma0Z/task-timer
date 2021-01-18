@@ -90,16 +90,16 @@ export const CountdownComponent = withStyles(styles)(class CountdownInternal ext
 
     componentDidMount() {
         CountdownService.instance.subscribe(
-            this.constructor.name, () => { this.setState({ countdowns: CountdownService.instance.countdowns }) }
+            'CountdownComponent', () => { this.setState({ countdowns: CountdownService.instance.countdowns }) }
         )
 
         if (this.state.running) {
-            this.state.countdowns.current?.subscribe(this.constructor.name, this.countdownSubscriber)
+            this.state.countdowns.current?.subscribe('CountdownComponent', this.countdownSubscriber)
         }
     }
 
     componentWillUnmount() {
-        CountdownService.instance.unsubscribe(this.constructor.name)
+        CountdownService.instance.unsubscribe('CountdownComponent')
     }
 
     handleStartStopOnClick() {
@@ -112,14 +112,14 @@ export const CountdownComponent = withStyles(styles)(class CountdownInternal ext
 
     start() {
         this.setState({ running: true })
-        this.state.countdowns.current.subscribe(this.constructor.name, this.countdownSubscriber)
+        // this.state.countdowns.current.subscribe('CountdownComponent', this.countdownSubscriber)
         this.state.countdowns.current.start()
         window.document.title = `${APP_TITLE_SHORT} [${this.state.countdowns.current.name} ${TimeFormat.seconds(this.state.countdowns.current.secondsLeft)}]`
     }
 
     stop() {
         this.setState({ running: false })
-        this.state.countdowns.current.unsubscribe(this.constructor.name)
+        // this.state.countdowns.current.unsubscribe('CountdownComponent')
         this.state.countdowns.current.stop()
 
         if (this.state.countdowns.current.startTime && this.state.countdowns.current.endTime) {

@@ -28,12 +28,12 @@ export const HistoryList = withStyles(styles)(class HistoryListInternal extends 
 
     componentDidMount() {
         HistoryService.instance.subscribe(
-            this.constructor.name, () => { this.setState({ history: HistoryService.instance.history }) }
+            'HistoryService', () => { this.setState({ history: HistoryService.instance.history }) }
         )
     }
 
     componentWillUnmount() {
-        HistoryService.instance.unsubscribe(this.constructor.name)
+        HistoryService.instance.unsubscribe('HistoryService')
     }
 
     render() {

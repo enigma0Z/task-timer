@@ -45,7 +45,7 @@ export class CountdownService extends Subscribable {
             }
         }
 
-        this._countdowns.subscribe(this.constructor.name, () => {
+        this._countdowns.subscribe('CountdownService', () => {
             this.save()
         })
 

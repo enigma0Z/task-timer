@@ -190,11 +190,11 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
                         <Card className={classes.modal}>
                             <Grid container direction='column' alignItems='center' alignContent='center'>
                                 <Grid item xs>
-                                    <Typography variant='h4'>Updates!</Typography>
+                                    <Typography variant='h4'>Version {process.env.REACT_APP_VERSION}</Typography>
                                 </Grid>
                                 <Grid item xs>
                                     <Typography variant='body1'>
-                                        Task Timer has been updated since the last time you were here.  Click below to
+                                        Task Timer has been updated since the last time you were here. Click below to
                                         see what's new!
                                     </Typography>
                                     <br />

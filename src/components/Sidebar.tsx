@@ -73,13 +73,13 @@ export const Sidebar = withStyles(styles)(class SidebarComponent extends Compone
     }
 
     componentDidMount() {
-        notificationService.subscribe(this.constructor.name, () => {
+        notificationService.subscribe('NotificationService', () => {
             this.refreshNotificationState()
         })
     }
 
     componentWillUnmount() {
-        notificationService.unsubscribe(this.constructor.name)
+        notificationService.unsubscribe('NotificationService')
     }
 
     render() {

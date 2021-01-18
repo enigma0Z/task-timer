@@ -1,6 +1,10 @@
 # What's new
 
-## Version 1.1.0
+## 1.1.2
+
+* Fix timers not actively updating (due to goofy minified code problems)
+
+## 1.1.0
 
 * History
   * Your timer splits are recorded in the history component
