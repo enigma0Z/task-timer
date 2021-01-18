@@ -1,4 +1,19 @@
-import { Box, createStyles, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Theme, Typography, WithStyles, withStyles } from "@material-ui/core"
+import {
+    Box,
+    createStyles,
+    Grid,
+    Paper,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Theme,
+    Typography,
+    WithStyles,
+    withStyles
+} from "@material-ui/core"
 import React, { Component } from "react"
 import { TimeFormat } from "../data/format/Time";
 import { HistoryItem, HistoryItemCollection } from "../data/History";
@@ -59,7 +74,7 @@ export const HistoryList = withStyles(styles)(class HistoryListInternal extends 
             </Grid>
             {
                 Object.keys(totals).map((name: string) => (
-                    <Grid item xs={2}>
+                    <Grid item key={name} xs={2}>
                         <Paper>
                             <TwoText caption={name} text={`${TimeFormat.seconds(totals[name] / 1000)}`} />
                         </Paper>
