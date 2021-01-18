@@ -18,10 +18,12 @@ test('History object constructable declared object', () => {
 })
 
 test('HistoryCollection constructable from list of objects', () => {
-    let actualParams = {items: [
-        { name: 'foo', start: 1, end: 2 },
-        { name: 'bar', start: 3, end: 4 }
-    ]}
+    let actualParams = {
+        items: [
+            { name: 'foo', start: 1, end: 2 },
+            { name: 'bar', start: 3, end: 4 }
+        ]
+    }
 
     let actual = new HistoryItemCollection(actualParams);
     expect(actual.items[0].name).toBe('foo');
@@ -35,7 +37,7 @@ test('HistoryCollection constructable from list of objects', () => {
 })
 
 test('HistoryCollection constructable from empty', () => {
-    let actual = new HistoryItemCollection({});
+    let actual = new HistoryItemCollection();
     let expected = { items: [] }
     expect(JSON.stringify(actual)).toBe(JSON.stringify(expected));
     expect(JSON.stringify(new HistoryItemCollection())).toBe(JSON.stringify(expected))
