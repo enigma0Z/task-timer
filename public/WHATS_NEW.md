@@ -1,5 +1,10 @@
 # What's new
 
+## 1.1.3
+
+* Fix history view spacing
+* Fix what's new modal spacing
+
 ## 1.1.2
 
 * Fix timers not actively updating (due to goofy minified code problems)
