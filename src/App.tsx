@@ -31,6 +31,7 @@ import {
 } from '@material-ui/pickers';
 import { HistoryList } from './components/History';
 import { CountdownComponent } from './components/Countdown';
+import { FlexModal } from './components/FlexModal';
 
 const styles = (theme: Theme) => createStyles({
     root: {
@@ -79,7 +80,9 @@ const styles = (theme: Theme) => createStyles({
         alignItems: 'center',
         justifyContent: 'center',
         padding: 8,
-        border: 'none'
+        border: 'none',
+        width: '100%',
+        height: '100%'
     },
 
     statusStyle: {
@@ -176,43 +179,40 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
         const classes = this.props.classes
         return (
             <div className={classes.root}>
-                <Modal
+                <FlexModal
                     open={this.state.whatsNewModalOpen}
-                    onClose={() => { this.setState({ whatsNewModalOpen: false }) }}
-                    closeAfterTransition
-                    className={classes.modal}
-                    BackdropComponent={Backdrop}
-                    BackdropProps={{
-                        timeout: 500,
+                    onClose={() => { console.log('App.tsx onClose()'); this.setState({ whatsNewModalOpen: false }) }}
+                    spacing={{
+                        top: { xs: 1, md: 2 },
+                        middle: { xs: 1, md: 1 },
+                        center: { xs: 5, md: 1 },
+                        bottom: { xs: 1, md: 2 },
                     }}
                 >
-                    <Fade in={this.state.whatsNewModalOpen}>
-                        <Card className={classes.modal}>
-                            <Grid container direction='column' alignItems='center' alignContent='center'>
-                                <Grid item xs>
-                                    <Typography variant='h4'>Version {process.env.REACT_APP_VERSION}</Typography>
-                                </Grid>
-                                <Grid item xs>
-                                    <Typography variant='body1'>
-                                        Task Timer has been updated since the last time you were here. Click below to
-                                        see what's new!
-                                    </Typography>
-                                    <br />
-                                </Grid>
-                                <Grid item xs>
-                                    <Button
-                                        variant='contained'
-                                        href='/WHATS_NEW.html'
-                                        target='_blank'
-                                        onClick={() => { this.setState({ whatsNewModalOpen: false }) }}
-                                    >
-                                        See what's new!
-                                </Button>
-                                </Grid>
+                    <Card className={classes.modal}>
+                        <Grid container direction='column' alignItems='center' alignContent='center'>
+                            <Grid item xs>
+                                <Typography variant='h4'>Version {process.env.REACT_APP_VERSION}</Typography>
                             </Grid>
-                        </Card>
-                    </Fade>
-                </Modal>
+                            <Grid item xs>
+                                <Typography variant='body1'>
+                                    Task Timer has been updated since the last time you were here. Click below to
+                                    see what's new!
+                                                    </Typography> <br />
+                            </Grid>
+                            <Grid item xs>
+                                <Button
+                                    variant='contained'
+                                    href='/WHATS_NEW.html'
+                                    target='_blank'
+                                    onClick={() => { this.setState({ whatsNewModalOpen: false }) }}
+                                >
+                                    See what's new!
+                                            </Button>
+                            </Grid>
+                        </Grid>
+                    </Card>
+                </FlexModal>
                 <AppBar position="static">
                     <Toolbar>
                         <IconButton
