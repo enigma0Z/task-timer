@@ -3,7 +3,7 @@ import React, { Component } from "react"
 import { TimeFormat } from "../data/format/Time";
 import { HistoryItem, HistoryItemCollection } from "../data/History";
 import { HistoryService } from "../services/History";
-import { TwoText } from "./elements/TwoText";
+import { TwoText } from "../widgets/TwoText";
 
 const styles = (theme: Theme) => createStyles({
     table: {
