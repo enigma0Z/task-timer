@@ -2,9 +2,14 @@ import React, { Component } from 'react';
 
 import {
     AppBar,
+    Backdrop,
+    Button,
+    Card,
     createStyles,
+    Fade,
     Grid,
     IconButton,
+    Modal,
     Paper,
     Theme,
     Toolbar,
@@ -100,7 +105,8 @@ interface AppState {
     confirmDeleteName: string
     confirmResetOpen: boolean
     warningNotificationSent: boolean
-    selectedDate: Date
+    selectedDate: Date,
+    whatsNewModalOpen: boolean,
 }
 
 export const APP_TITLE: string = 'Task Timer'
@@ -119,6 +125,7 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
         let paused = false
 
         const selectedDate = localStorage.getItem('selectedDate')
+        const lastVersion = localStorage.getItem('version')
 
         this.state = {
             workLength: 50,
@@ -134,7 +141,8 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
             confirmDeleteName: '',
             confirmResetOpen: false,
             warningNotificationSent: false,
-            selectedDate: selectedDate ? new Date(JSON.parse(selectedDate)) : new Date(0, 0, 0, 12, 0, 10)
+            selectedDate: selectedDate ? new Date(JSON.parse(selectedDate)) : new Date(0, 0, 0, 12, 0, 10),
+            whatsNewModalOpen: lastVersion !== process.env.REACT_APP_VERSION
         }
 
         this.checkSchedule = this.checkSchedule.bind(this)
@@ -142,6 +150,10 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
 
     componentDidMount() {
         notificationService.requestDesktopNotificationPermissions()
+
+        if (process.env.REACT_APP_VERSION) {
+            localStorage.setItem('version', process.env.REACT_APP_VERSION)
+        }
 
         this.checkSchedule()
     }
@@ -164,6 +176,43 @@ const App = withStyles(styles)(class AppComponent extends Component<AppProps, Ap
         const classes = this.props.classes
         return (
             <div className={classes.root}>
+                <Modal
+                    open={this.state.whatsNewModalOpen}
+                    onClose={() => { this.setState({ whatsNewModalOpen: false }) }}
+                    closeAfterTransition
+                    className={classes.modal}
+                    BackdropComponent={Backdrop}
+                    BackdropProps={{
+                        timeout: 500,
+                    }}
+                >
+                    <Fade in={this.state.whatsNewModalOpen}>
+                        <Card className={classes.modal}>
+                            <Grid container direction='column' alignItems='center' alignContent='center'>
+                                <Grid item xs>
+                                    <Typography variant='h4'>Updates!</Typography>
+                                </Grid>
+                                <Grid item xs>
+                                    <Typography variant='body1'>
+                                        Task Timer has been updated since the last time you were here.  Click below to
+                                        see what's new!
+                                    </Typography>
+                                    <br />
+                                </Grid>
+                                <Grid item xs>
+                                    <Button
+                                        variant='contained'
+                                        href='/WHATS_NEW.html'
+                                        target='_blank'
+                                        onClick={() => { this.setState({ whatsNewModalOpen: false }) }}
+                                    >
+                                        See what's new!
+                                </Button>
+                                </Grid>
+                            </Grid>
+                        </Card>
+                    </Fade>
+                </Modal>
                 <AppBar position="static">
                     <Toolbar>
                         <IconButton
