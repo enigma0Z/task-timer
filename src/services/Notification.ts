@@ -3,6 +3,7 @@ import { Subscribable } from '../data/Subscribable'
 export class NotificationService extends Subscribable {
     private static _instance: NotificationService;
     private _desktopNotificationSupport: boolean = false
+    protected readonly name: string = 'NotificationService'
 
     public static get instance(): NotificationService {
         return this._instance || (this._instance = new this())

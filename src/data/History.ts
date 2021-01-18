@@ -29,6 +29,7 @@ export class HistoryItem {
 
 export class HistoryItemCollection extends Subscribable implements Collection<HistoryItem> {
     readonly items: HistoryItem[] = []
+    protected readonly name: string = 'HistoryItemCollection'
 
     constructor(collection?: Collection<HistoryItemObject>) {
         super()

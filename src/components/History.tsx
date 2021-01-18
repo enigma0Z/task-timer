@@ -18,6 +18,8 @@ interface HistoryListState {
 };
 
 export const HistoryList = withStyles(styles)(class HistoryListInternal extends Component<HistoryListProps, HistoryListState> {
+    private readonly name: string = 'HistoryList'
+
     constructor(props: HistoryListProps) {
         super(props)
 
@@ -28,12 +30,12 @@ export const HistoryList = withStyles(styles)(class HistoryListInternal extends 
 
     componentDidMount() {
         HistoryService.instance.subscribe(
-            'HistoryService', () => { this.setState({ history: HistoryService.instance.history }) }
+            this.name, () => { this.setState({ history: HistoryService.instance.history }) }
         )
     }
 
     componentWillUnmount() {
-        HistoryService.instance.unsubscribe('HistoryService')
+        HistoryService.instance.unsubscribe(this.name)
     }
 
     render() {

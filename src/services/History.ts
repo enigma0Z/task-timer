@@ -4,6 +4,7 @@ import { Subscribable } from '../data/Subscribable'
 export class HistoryService extends Subscribable {
     private static _instance: HistoryService;
     public static get instance(): HistoryService { return this._instance || (this._instance = new this()) }
+    protected readonly name: string = 'HistoryService'
 
     private _history: HistoryItemCollection;
 

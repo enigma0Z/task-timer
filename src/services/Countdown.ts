@@ -11,7 +11,7 @@ const DEFAULT_COUNTDOWNS: CountdownCollectionObject = {
 export class CountdownService extends Subscribable {
     private static _instance: CountdownService;
     private _countdowns: CountdownCollection = new CountdownCollection();
-    private readonly storageItem: string = 'CountdownService'
+    protected readonly name: string = 'CountdownService'
 
     public static get instance(): CountdownService {
         return this._instance || (this._instance = new this())
@@ -29,7 +29,7 @@ export class CountdownService extends Subscribable {
     }
 
     public load(): void {
-        let countdowns: string | null = localStorage.getItem(this.storageItem)
+        let countdowns: string | null = localStorage.getItem(this.name)
         if (countdowns) {
             this._countdowns = new CountdownCollection(JSON.parse(countdowns))
         } else {
@@ -45,7 +45,7 @@ export class CountdownService extends Subscribable {
             }
         }
 
-        this._countdowns.subscribe('CountdownService', () => {
+        this._countdowns.subscribe(this.name, () => {
             this.save()
         })
 
@@ -53,7 +53,7 @@ export class CountdownService extends Subscribable {
     }
 
     public save(): void {
-        localStorage.setItem(this.storageItem, JSON.stringify(this.countdowns))
+        localStorage.setItem(this.name, JSON.stringify(this.countdowns))
         this.updateSubscribers()
     }
 

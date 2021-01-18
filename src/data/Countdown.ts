@@ -140,6 +140,7 @@ export interface CountdownCollectionObject {
 export class CountdownCollection extends Subscribable implements CountdownCollectionObject {
     private _items: Countdown[] = []
     private _currentIndex = 0
+    protected readonly name: string = 'CountdownCollection'
 
     constructor(collection?: CountdownCollectionObject) {
         super()
@@ -182,7 +183,7 @@ export class CountdownCollection extends Subscribable implements CountdownCollec
     public addItem(countdownObject: CountdownObject): void {
         if (countdownObject !== null) {
             let countdown: Countdown = new Countdown(countdownObject)
-            countdown.subscribe('CountdownCollection', () => {
+            countdown.subscribe(this.name, () => {
                 this.updateSubscribers()
             })
 
