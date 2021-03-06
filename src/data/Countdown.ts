@@ -1,3 +1,4 @@
+import { HistoryService } from "../services/History";
 import { Subscribable } from "./Subscribable";
 
 const DEFAULT_MIN = 1
@@ -16,6 +17,7 @@ export interface CountdownObject {
     paused?: boolean
     value?: number,
     intervalMs?: number,
+    runningCallback?: (countdown: Countdown) => void
 }
 
 export class Countdown extends Subscribable {
@@ -33,6 +35,8 @@ export class Countdown extends Subscribable {
     private _value: number = 0
     private _intervalMs: number = 1000
 
+    public runningCallback?: (countdown: Countdown) => void
+
     public constructor(countdown: CountdownObject) {
         super()
         this._startTime = countdown.startTime
@@ -44,6 +48,7 @@ export class Countdown extends Subscribable {
         this._max = countdown.max ? countdown.max : DEFAULT_MAX
         this._value = countdown.value ? countdown.value : this._min
         this._intervalMs = countdown.intervalMs ? countdown.intervalMs : DEFAULT_INTERVAL_MS
+        this.runningCallback = countdown.runningCallback
     }
 
     public toJSON(): CountdownObject {
@@ -67,7 +72,7 @@ export class Countdown extends Subscribable {
     public get paused(): boolean { return this._paused; }
 
     public get value(): number { return this._value }
-    public set value(value: number) { this._value = value; this.updateSubscribers() }
+    public set value(value: number) { this._value = value }
 
     public get min(): number { return this._min ? this._min : DEFAULT_MIN }
     public set min(min: number) { this._min = min; this.updateSubscribers() }
@@ -92,7 +97,7 @@ export class Countdown extends Subscribable {
         this._running = true
         this._startTime = Date.now()
         if (SHORT_TIMER) {
-            this._endTime = this._startTime + 2 * 1000
+            this._endTime = this._startTime + 3 * 1000
         } else {
             this._endTime = this._startTime + (this.value * 60 * 1000)
         }
@@ -119,11 +124,27 @@ export class Countdown extends Subscribable {
 
     update() {
         if (this.endTime !== undefined && !this.paused) {
+            if (this.runningCallback) this.runningCallback(this)
             if (this.secondsLeft > 0) {
                 this.timeout = setTimeout(() => this.update(), this.intervalMs)
             } else {
                 this._running = false
                 this._endTime = Date.now()
+
+                let endTime: number = Date.now()
+
+                if (this.startTime && this.endTime) {
+                    if (endTime > this.endTime) {
+                        endTime = this.endTime
+                    }
+
+                    HistoryService.instance.addItem({
+                        name: this.name,
+                        start: this.startTime,
+                        end: endTime
+                    })
+                }
+
                 clearTimeout(this.timeout)
             }
         }
@@ -140,6 +161,7 @@ export interface CountdownCollectionObject {
 export class CountdownCollection extends Subscribable implements CountdownCollectionObject {
     private _items: Countdown[] = []
     private _currentIndex = 0
+    private running: boolean = false
     protected readonly name: string = 'CountdownCollection'
 
     constructor(collection?: CountdownCollectionObject) {
@@ -157,20 +179,25 @@ export class CountdownCollection extends Subscribable implements CountdownCollec
         if (this._currentIndex > this.items.length - 1) {
             this._currentIndex = 0
         }
+
+        if (this.current?.running) {
+            this.running = true
+        }
     }
 
     public get items(): Countdown[] { return this._items }
+
     public get currentIndex(): number { return this._currentIndex }
     public get current(): Countdown { return this.items[this.currentIndex] }
+
+    public get previousIndex(): number { return (this.items.length + this.currentIndex - 1) % this.items.length }
+    public get previous(): Countdown { return this.items[this.previousIndex] }
+
     public get nextIndex(): number { return (this.currentIndex + 1) % this.items.length }
     public get next(): Countdown { return this.items[this.nextIndex] }
+
     public get runningCountdown(): Countdown | null {
         return this.items.filter((countdown: Countdown) => countdown.running)[0]
-    }
-
-    public advance(): void {
-        this._currentIndex = this.nextIndex
-        this.updateSubscribers()
     }
 
     public toJSON(): CountdownCollectionObject {
@@ -180,11 +207,22 @@ export class CountdownCollection extends Subscribable implements CountdownCollec
         }
     }
 
+    public countdownSubscriber(countdown: Countdown): void {
+        if (this.current.running) {
+            this.running = true
+        } else if (this.running) {
+            this._currentIndex = this.nextIndex
+            this.running = false
+        }
+
+        this.updateSubscribers()
+    }
+
     public addItem(countdownObject: CountdownObject): void {
         if (countdownObject !== null) {
             let countdown: Countdown = new Countdown(countdownObject)
-            countdown.subscribe(this.name, () => {
-                this.updateSubscribers()
+            countdown.subscribe(this.name, (countdown: Countdown) => {
+                this.countdownSubscriber(countdown)
             })
 
             this.items.push(countdown)

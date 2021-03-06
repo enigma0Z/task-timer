@@ -12,7 +12,7 @@ import {
     withStyles
 } from "@material-ui/core"
 import React, { Component } from "react"
-import { CountdownCollection } from "../data/Countdown";
+import { Countdown, CountdownCollection } from "../data/Countdown";
 import { TimeFormat } from "../data/format/Time";
 import { CountdownService } from "../services/Countdown";
 import { TwoText } from "../widgets/TwoText";
@@ -28,11 +28,11 @@ import StopIcon from '@material-ui/icons/Stop';
 import PlayCircleOutlineIcon from '@material-ui/icons/PlayCircleOutline';
 
 import { LabelSlider } from "../widgets/LabelSlider";
-import { HistoryService } from "../services/History";
 import { NotificationService } from "../services/Notification";
 
 import { APP_TITLE, APP_TITLE_SHORT } from "../App";
 import { ConfirmationModal } from "./ConfirmationModal";
+import { FlexModal } from "./FlexModal";
 
 const styles = (theme: Theme) => createStyles({
     popperCardStyle: {
@@ -40,6 +40,11 @@ const styles = (theme: Theme) => createStyles({
         backgroundColor: theme.palette.grey[50],
         margin: 8,
         height: '100%'
+    },
+
+    modalStyle: {
+        padding: 8,
+        height: '100%',
     },
 
     fillWidth: {
@@ -52,6 +57,7 @@ interface CountdownComponentProps extends WithStyles<typeof styles> { };
 interface CountdownComponentState {
     countdowns: CountdownCollection
     editingOrder: boolean
+    completeModalOpen: boolean,
     confirmDeleteOpen: boolean,
     confirmDeleteIndex: number,
     confirmDeleteName: string
@@ -70,6 +76,7 @@ export const CountdownComponent = withStyles(styles)(class CountdownInternal ext
         this.state = {
             countdowns: CountdownService.instance.countdowns,
             editingOrder: false,
+            completeModalOpen: false,
             confirmDeleteOpen: false,
             confirmDeleteIndex: 0,
             confirmDeleteName: '',
@@ -90,12 +97,8 @@ export const CountdownComponent = withStyles(styles)(class CountdownInternal ext
 
     componentDidMount() {
         CountdownService.instance.subscribe(
-            'CountdownComponent', () => { this.setState({ countdowns: CountdownService.instance.countdowns }) }
+            'CountdownComponent', () => { this.countdownSubscriber() }
         )
-
-        if (this.state.running) {
-            this.state.countdowns.current?.subscribe('CountdownComponent', this.countdownSubscriber)
-        }
     }
 
     componentWillUnmount() {
@@ -112,67 +115,57 @@ export const CountdownComponent = withStyles(styles)(class CountdownInternal ext
 
     start() {
         this.setState({ running: true })
-        // this.state.countdowns.current.subscribe('CountdownComponent', this.countdownSubscriber)
-        this.state.countdowns.current.start()
-        window.document.title = `${APP_TITLE_SHORT} [${this.state.countdowns.current.name} ${TimeFormat.seconds(this.state.countdowns.current.secondsLeft)}]`
+        CountdownService.instance.countdowns.current.runningCallback = (countdown: Countdown) => {
+            if (countdown.secondsLeft > 0) {
+                if (
+                    !this.state.warningNotificationSent
+                    && countdown.secondsLeft < 300
+                    && countdown.secondsLeft > 240
+                ) {
+                    this.setState({
+                        warningNotificationSent: true
+                    })
+
+                    this.notificationService.showNotification(
+                        APP_TITLE,
+                        {
+                            body: `Stopping soon: ${CountdownService.instance.countdowns.current.name}`
+                        }
+                    )
+                }
+            } else if (countdown.running) { // Only send a stopped notification if running is true, i.e., we stopped naturally
+                NotificationService.instance.showNotification(
+                    APP_TITLE,
+                    {
+                        body: `Complete: ${CountdownService.instance.countdowns.current.name}`
+                    }
+                )
+                this.setState({ completeModalOpen: true })
+            }
+        }
+
+        CountdownService.instance.countdowns.current.start()
     }
 
     stop() {
         this.setState({ running: false })
-        // this.state.countdowns.current.unsubscribe('CountdownComponent')
-        this.state.countdowns.current.stop()
+        CountdownService.instance.countdowns.current.stop()
 
-        if (this.state.countdowns.current.startTime && this.state.countdowns.current.endTime) {
-            let endTime: number = Date.now()
-
-            if (endTime > this.state.countdowns.current.endTime) {
-                endTime = this.state.countdowns.current.endTime
-            }
-
-            HistoryService.instance.addItem({
-                name: this.state.countdowns.current.name,
-                start: this.state.countdowns.current.startTime,
-                end: endTime
-            })
-        }
-
-        this.setState({
-            warningNotificationSent: false,
-            paused: false
-        })
-
-        this.state.countdowns.advance()
-        window.document.title = APP_TITLE
     }
 
     countdownSubscriber() {
-        if (this.state.countdowns.current.running) {
-            window.document.title = `${APP_TITLE_SHORT} [${this.state.countdowns.current.name} ${TimeFormat.seconds(this.state.countdowns.current.secondsLeft)}]`
-            // this.updateCountdownState(this.state.countdowns.current)
-            if (
-                !this.state.warningNotificationSent
-                && this.state.countdowns.current.secondsLeft < 300
-                && this.state.countdowns.current.secondsLeft > 240
-            ) {
-                this.setState({
-                    warningNotificationSent: true
-                })
+        this.setState({ countdowns: CountdownService.instance.countdowns })
 
-                this.notificationService.showNotification(
-                    APP_TITLE,
-                    {
-                        body: `Stopping soon: ${this.state.countdowns.current.name}`
-                    }
-                )
-            }
+        if (CountdownService.instance.countdowns.current.running) {
+            this.setState({ running: true })
+            window.document.title = `${APP_TITLE_SHORT} [${CountdownService.instance.countdowns.current.name} ${TimeFormat.seconds(CountdownService.instance.countdowns.current.secondsLeft)}]`
         } else {
-            this.notificationService.showNotification(
-                APP_TITLE,
-                {
-                    body: `Complete: ${this.state.countdowns.current.name}`
-                }
-            )
-            this.stop()
+            this.setState({
+                warningNotificationSent: false,
+                paused: false,
+                running: false
+            })
+            window.document.title = APP_TITLE_SHORT
         }
     }
 
@@ -180,11 +173,11 @@ export const CountdownComponent = withStyles(styles)(class CountdownInternal ext
         const classes = this.props.classes
         let elements: JSX.Element[] = []
 
-        for (let i in this.state.countdowns.items) {
+        for (let i in CountdownService.instance.countdowns.items) {
             const index: number = parseInt(i)
-            const countdown = this.state.countdowns.items[i]
+            const countdown = CountdownService.instance.countdowns.items[i]
             const upDisabled = index === 0
-            const downDisabled = index === this.state.countdowns.items.length - 1
+            const downDisabled = index === CountdownService.instance.countdowns.items.length - 1
 
             if (this.state.editingOrder) {
                 elements.push(
@@ -201,7 +194,7 @@ export const CountdownComponent = withStyles(styles)(class CountdownInternal ext
                                         color='primary'
                                         disabled={upDisabled}
                                         onClick={() => {
-                                            this.state.countdowns.swapItems(index, index - 1)
+                                            CountdownService.instance.countdowns.swapItems(index, index - 1)
                                         }}
                                     >
                                         <ArrowUpwardIcon />
@@ -210,7 +203,7 @@ export const CountdownComponent = withStyles(styles)(class CountdownInternal ext
                                         color='primary'
                                         disabled={downDisabled}
                                         onClick={() => {
-                                            this.state.countdowns.swapItems(index, index + 1)
+                                            CountdownService.instance.countdowns.swapItems(index, index + 1)
                                         }}
                                     >
                                         <ArrowDownwardIcon />
@@ -272,13 +265,46 @@ export const CountdownComponent = withStyles(styles)(class CountdownInternal ext
                     })
                 }}
                 onConfirm={() => {
-                    this.state.countdowns.deleteItem(this.state.confirmDeleteIndex)
+                    CountdownService.instance.countdowns.deleteItem(this.state.confirmDeleteIndex)
                     this.setState({
                         confirmDeleteOpen: false
                     })
                 }}
                 subtitle='Deleting this cannot be undone'
             />
+            <FlexModal
+                open={this.state.completeModalOpen}
+                onClose={() => { this.setState({ completeModalOpen: false }) }}
+                spacing={{
+                    middle: 1,
+                    center: 10
+                }}
+            >
+                <Card style={{ height: '100%', padding: 8 }}>
+                    <Box display='flex' flexDirection='column' style={{ height: '100%' }}>
+                        <Box display='flex' flex={2} justifyContent='center' alignItems='center'>
+                            <Typography variant='h4'>{CountdownService.instance.countdowns.previous.name} complete!</Typography>
+                        </Box>
+                        <Box display='flex' flex={1} justifyContent='center'>
+                            <Button
+                                variant='contained'
+                                color='primary'
+                                style={{ width: '100%' }}
+                                onClick={() => {
+                                    this.start()
+                                    this.setState({
+                                        completeModalOpen: false,
+                                    })
+                                }}
+                            >
+                                <Typography variant='h5'>
+                                    Start {CountdownService.instance.countdowns.current.name}
+                                </Typography>
+                            </Button>
+                        </Box>
+                    </Box>
+                </Card>
+            </FlexModal>
             <Grid item xs={12}>
                 <Box display='flex' flexDirection="row">
                     <Box flex='100%'>
@@ -288,7 +314,7 @@ export const CountdownComponent = withStyles(styles)(class CountdownInternal ext
                         <IconButton
                             disabled={this.state.editingOrder}
                             onClick={() => {
-                                this.state.countdowns.addItem({ name: `NEW ${this.state.countdowns.items.length}` })
+                                CountdownService.instance.countdowns.addItem({ name: `NEW ${CountdownService.instance.countdowns.items.length}` })
                             }}
                         >
                             <AddIcon color={this.state.editingOrder ? 'disabled' : 'primary'} />
@@ -325,7 +351,7 @@ export const CountdownComponent = withStyles(styles)(class CountdownInternal ext
                     </Button>
                     <Button className={classes.fillWidth} disabled={!this.state.running} onClick={() => {
                         if (this.state.running) {
-                            this.state.countdowns.current.pause()
+                            CountdownService.instance.countdowns.current.pause()
                             this.setState({
                                 paused: !this.state.paused
                             })
@@ -338,17 +364,17 @@ export const CountdownComponent = withStyles(styles)(class CountdownInternal ext
             <Grid item xs={4} sm={3}>
                 <TwoText
                     caption={this.state.running ? this.state.paused ? 'Paused' : "Running" : "On deck"}
-                    text={this.state.countdowns.current?.name || 'NONE'}
+                    text={CountdownService.instance.countdowns.current?.name || 'NONE'}
                 />
             </Grid>
             <Grid item xs={4} sm={3}>
                 <TwoText
                     caption="Time left"
-                    text={TimeFormat.seconds(this.state.countdowns.current?.secondsLeft)}
+                    text={TimeFormat.seconds(CountdownService.instance.countdowns.current?.secondsLeft)}
                 />
             </Grid>
             <Grid item xs={4} sm={3}>
-                <TwoText caption="Up next" text={this.state.countdowns.next?.name || 'NONE'} />
+                <TwoText caption="Up next" text={CountdownService.instance.countdowns.next?.name || 'NONE'} />
             </Grid>
         </Grid>
     }
