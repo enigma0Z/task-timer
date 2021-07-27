@@ -42,6 +42,8 @@ export class CountdownService extends Subscribable {
                     currentIndex: currentCountdown ? parseInt(currentCountdown) : 0
                 })
 
+            } else { // If no data is present, provide default data
+                this._countdowns = new CountdownCollection(DEFAULT_COUNTDOWNS)
             }
         }
 
