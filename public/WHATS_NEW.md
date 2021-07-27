@@ -1,6 +1,6 @@
 # What's new
 
-## 1.1.3
+## 1.1.4
 
 * Fix situation where the app won't load when no default data exists
 
