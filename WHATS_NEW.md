@@ -2,6 +2,10 @@
 
 ## 1.1.3
 
+* Fix situation where the app won't load when no default data exists
+
+## 1.1.3
+
 * Fix history view spacing
 * Fix what's new modal spacing
 
